@@ -1,0 +1,33 @@
+{
+    "project_name": "NetSocket",
+    "canonical_name": "netsocket",
+    "include_dirs": "include",
+    "debug_defines" : [ "-DNETSOCKET_DEBUG" ],
+    "release_defines" : [ "-DNETSOCKET_RELEASE" ],
+    "targets": [
+       {
+            "name" : "netsocket_static",
+            "is_static_library" : true,
+            "is_install" : true,
+            "build_defines" : [ "-DNETSOCKET_BUILD_STATIC_LIBRARY" ],
+            "use_defines" : [ "-DNETSOCKET_USE_STATIC_LIBRARY" ]
+        },
+        {
+            "name" : "netsocket_shared",
+            "is_shared_library" : true,
+            "is_install" : true,
+            "build_defines" : [ "-DNETSOCKET_BUILD_SHARED_LIBRARY" ],
+            "use_defines" : [ "-DNETSOCKET_USE_SHARED_LIBRARY" ]
+        },
+        {
+            "name": "netsocket",
+            "is_executable": true,
+            "sources": [
+                "source/main.cpp"
+            ]
+        }
+    ],
+    "sources" : [
+        "source/netsocket.cpp"
+    ]
+}
