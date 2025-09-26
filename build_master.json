@@ -5,25 +5,36 @@
     "include_dirs": "include",
     "debug_defines" : [ "-DNETSOCKET_DEBUG" ],
     "release_defines" : [ "-DNETSOCKET_RELEASE" ],
-    "windows_link_args" : [ "-lws2_32" ],
+    "windows_link_args" : [ "-lws2_32", "-liphlpapi" ],
+    "vars" :
+    {
+	    "sources" : [
+		    "source/netsocket.cpp",
+		    "source/netinterface.cpp",
+		    "source/assert.cpp"
+	    ]
+    },
     "targets": [
        {
             "name" : "netsocket_static",
             "is_static_library" : true,
             "is_install" : true,
             "build_defines" : [ "-DNETSOCKET_BUILD_STATIC_LIBRARY" ],
-            "use_defines" : [ "-DNETSOCKET_USE_STATIC_LIBRARY" ]
+            "use_defines" : [ "-DNETSOCKET_USE_STATIC_LIBRARY" ],
+	    "sources" : [ "$sources" ]
         },
         {
             "name" : "netsocket_shared",
             "is_shared_library" : true,
             "is_install" : true,
             "build_defines" : [ "-DNETSOCKET_BUILD_SHARED_LIBRARY" ],
-            "use_defines" : [ "-DNETSOCKET_USE_SHARED_LIBRARY" ]
+            "use_defines" : [ "-DNETSOCKET_USE_SHARED_LIBRARY" ],
+	    "sources" : [ "$sources" ]
         },
         {
             "name": "test_server",
             "is_executable": true,
+	    "link_with" : [ "netsocket_static" ],
             "sources": [
                 "source/main.server.cpp"
             ]
@@ -31,13 +42,10 @@
         {
             "name" : "test_client",
             "is_executable" : true,
+	    "link_with" : [ "netsocket_static" ],
             "sources" : [
                 "source/main.client.cpp"
             ]
         }
-    ],
-    "sources" : [
-        "source/netsocket.cpp",
-        "source/assert.cpp"
     ]
 }
