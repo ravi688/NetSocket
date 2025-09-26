@@ -5,7 +5,7 @@
     "include_dirs": "include",
     "debug_defines" : [ "-DNETSOCKET_DEBUG" ],
     "release_defines" : [ "-DNETSOCKET_RELEASE" ],
-    "windows_link_args" : [ "-lws2_32" ],
+    "windows_link_args" : [ "-lws2_32", "-liphlpapi" ],
     "vars" :
     {
 	    "sources" : [
