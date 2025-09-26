@@ -104,8 +104,8 @@ namespace netsocket
 				const std::string& interfaceName = pair.first;
 #ifdef PLATFORM_WINDOWS
                                 return interfaceName.starts_with("Ethernet") ||
-                                		interfaceName.starts_with("Wireless LAN") ||
-                                		interfaceName.starts_with("Network Bridge");
+                                	interfaceName.starts_with("Wireless LAN") ||
+                                	interfaceName.starts_with("Network Bridge");
 #else // if PLATFORM_LINUX
                                 return interfaceName.starts_with("en") ||
                                 	interfaceName.starts_with("eth") ||
