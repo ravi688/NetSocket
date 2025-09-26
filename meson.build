@@ -70,7 +70,7 @@ debug_defines_bm_internal__ = [
 
 # Source files (common to all targets)
 sources_bm_internal__ = files(
-'source/netsocket.cpp'
+'source/netsocket.cpp', 'source/assert.cpp'
 )
 
 # Include directories
@@ -83,12 +83,13 @@ lib_install_dir_bm_internal__ = get_option('libdir')/'netsocket'
 
 # Dependencies
 dependencies_bm_internal__ = [
-
+dependency('common'),
+dependency('spdlog')
 ]
 
 # Linker Arguments
 windows_link_args_bm_internal__ = [ 
-
+'-lws2_32'
 ]
 linux_link_args_bm_internal__ = [
 
@@ -265,32 +266,61 @@ pkgmod.generate(netsocket_shared,
 	extra_cflags: netsocket_shared_use_defines_bm_internal__ + project_build_mode_defines_bm_internal__
 )
 
-# -------------- Target: netsocket ------------------
-netsocket_sources_bm_internal__ = [
-'source/main.cpp'
+# -------------- Target: test_server ------------------
+test_server_sources_bm_internal__ = [
+'source/main.server.cpp'
 ]
-netsocket_include_dirs_bm_internal__ = [
+test_server_include_dirs_bm_internal__ = [
 
 ]
-netsocket_dependencies_bm_internal__ = [
+test_server_dependencies_bm_internal__ = [
 
 ]
-netsocket_link_args_bm_internal__ = {
+test_server_link_args_bm_internal__ = {
 'windows' : [],
 'linux' : [],
 'darwin' : []
 }
-netsocket_defines_bm_internal__ = [
+test_server_defines_bm_internal__ = [
 
 ]
-netsocket = executable('netsocket',
-	netsocket_sources_bm_internal__ + sources_bm_internal__,
-	dependencies: dependencies_bm_internal__ + netsocket_dependencies_bm_internal__,
-	include_directories: [inc_bm_internal__, netsocket_include_dirs_bm_internal__],
+test_server = executable('test_server',
+	test_server_sources_bm_internal__ + sources_bm_internal__,
+	dependencies: dependencies_bm_internal__ + test_server_dependencies_bm_internal__,
+	include_directories: [inc_bm_internal__, test_server_include_dirs_bm_internal__],
 	install: false,
-	c_args: netsocket_defines_bm_internal__ + project_build_mode_defines_bm_internal__,
-	cpp_args: netsocket_defines_bm_internal__ + project_build_mode_defines_bm_internal__, 
-	link_args: netsocket_link_args_bm_internal__[host_machine.system()],
+	c_args: test_server_defines_bm_internal__ + project_build_mode_defines_bm_internal__,
+	cpp_args: test_server_defines_bm_internal__ + project_build_mode_defines_bm_internal__, 
+	link_args: test_server_link_args_bm_internal__[host_machine.system()],
+	gnu_symbol_visibility: 'hidden'
+)
+
+# -------------- Target: test_client ------------------
+test_client_sources_bm_internal__ = [
+'source/main.client.cpp'
+]
+test_client_include_dirs_bm_internal__ = [
+
+]
+test_client_dependencies_bm_internal__ = [
+
+]
+test_client_link_args_bm_internal__ = {
+'windows' : [],
+'linux' : [],
+'darwin' : []
+}
+test_client_defines_bm_internal__ = [
+
+]
+test_client = executable('test_client',
+	test_client_sources_bm_internal__ + sources_bm_internal__,
+	dependencies: dependencies_bm_internal__ + test_client_dependencies_bm_internal__,
+	include_directories: [inc_bm_internal__, test_client_include_dirs_bm_internal__],
+	install: false,
+	c_args: test_client_defines_bm_internal__ + project_build_mode_defines_bm_internal__,
+	cpp_args: test_client_defines_bm_internal__ + project_build_mode_defines_bm_internal__, 
+	link_args: test_client_link_args_bm_internal__[host_machine.system()],
 	gnu_symbol_visibility: 'hidden'
 )
 

@@ -1,9 +1,11 @@
 {
     "project_name": "NetSocket",
     "canonical_name": "netsocket",
+    "dependencies" : [ "common", "spdlog" ],
     "include_dirs": "include",
     "debug_defines" : [ "-DNETSOCKET_DEBUG" ],
     "release_defines" : [ "-DNETSOCKET_RELEASE" ],
+    "windows_link_args" : [ "-lws2_32" ],
     "targets": [
        {
             "name" : "netsocket_static",
@@ -20,14 +22,22 @@
             "use_defines" : [ "-DNETSOCKET_USE_SHARED_LIBRARY" ]
         },
         {
-            "name": "netsocket",
+            "name": "test_server",
             "is_executable": true,
             "sources": [
-                "source/main.cpp"
+                "source/main.server.cpp"
+            ]
+        },
+        {
+            "name" : "test_client",
+            "is_executable" : true,
+            "sources" : [
+                "source/main.client.cpp"
             ]
         }
     ],
     "sources" : [
-        "source/netsocket.cpp"
+        "source/netsocket.cpp",
+        "source/assert.cpp"
     ]
 }
