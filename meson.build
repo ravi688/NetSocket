@@ -94,7 +94,7 @@ dependency('spdlog')
 
 # Linker Arguments
 windows_link_args_bm_internal__ = [ 
-'-lws2_32'
+'-lws2_32', '-liphlpapi'
 ]
 linux_link_args_bm_internal__ = [
 
