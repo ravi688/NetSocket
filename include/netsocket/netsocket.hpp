@@ -39,8 +39,10 @@ namespace netsocket
 
 	#ifdef PLATFORM_WINDOWS
 		using SocketHandle = SOCKET;
-	#elif PLATFORM_LINUX
+		#define NETSOCKET_INVALID_SOCKET_HANDLE INVALID_SOCKET // invalid socket handle
+	#elif defined(PLATFORM_LINUX)
 		using SocketHandle = int;
+		#define NETSOCKET_INVALID_SOCKET_HANDLE -1 // invalid file descriptor
 	#endif // PLATFORM_LINUX
 
 	class NETSOCKET_API Socket
@@ -56,9 +58,9 @@ namespace netsocket
 		void (*m_onDisconnect)(Socket& socket, void* userData);
 		void* m_userData;
 
-		Socket() : m_socket(INVALID_SOCKET), m_onDisconnect(NULL), m_userData(NULL) { }
+		Socket() : m_socket(NETSOCKET_INVALID_SOCKET_HANDLE), m_onDisconnect(NULL), m_userData(NULL) { }
 
-		static Socket CreateAcceptedSocket(SOCKET socket, int socketType, int ipAddressFamily, int ipProtocol)
+		static Socket CreateAcceptedSocket(SocketHandle socket, int socketType, int ipAddressFamily, int ipProtocol)
 		{
 			Socket s;
 			s.m_socket = socket;
@@ -77,7 +79,7 @@ namespace netsocket
 		static Socket CreateInvalid()
 		{
 			Socket s;
-			s.m_socket = INVALID_SOCKET;
+			s.m_socket = NETSOCKET_INVALID_SOCKET_HANDLE;
 			s.m_ipaFamily = 0;
 			s.m_socketType = 0;
 			s.m_ipProtocol = 0;

@@ -5,10 +5,24 @@
 
 #ifdef PLATFORM_WINDOWS
 #	include <ws2tcpip.h>
-#elif PLATFORM_LINUX
+#elif defined(PLATFORM_LINUX)
 #	include <sys/socket.h>
+#	include <arpa/inet.h> // for inet_addr
+#	include <netdb.h> // for struct addrinfo
+#	include <unistd.h> // for close
+#	include <errno.h> // for errno
+#	include <string.h> // for memset
+#	define ZeroMemory(ptr, size) memset(ptr, 0, size) // on Linux ZeroMemory is not defined.
 #else
 #	error "Unsupported platform"
+#endif
+
+#ifdef PLATFORM_WINDOWS
+#	define NETSOCKET_SOCKET_ERROR SOCKET_ERROR
+#else
+#	define NETSOCKET_SOCKET_ERROR (-1)
+#	define INT int
+#	define closesocket(socket_handle) ::close(socket_handle)
 #endif
 
 namespace netsocket
@@ -77,8 +91,14 @@ namespace netsocket
 	{
 		m_socket = socket(m_ipaFamily, m_socketType, m_ipProtocol);
 
-		if(m_socket == INVALID_SOCKET)
+		if(m_socket == NETSOCKET_INVALID_SOCKET_HANDLE)
+		{
+#ifdef PLATFORM_WINDOWS
 			debug_log_fetal_error("Unable to create socket, error code: %d", WSAGetLastError());
+#else // PLATFORM_LINUX
+      			debug_log_fetal_error("Unable to create socket, error: %s", strerror(errno));
+#endif
+		}
 
 		m_isValid = true;
 	}
@@ -93,7 +113,7 @@ namespace netsocket
 									m_onDisconnect(socket.m_onDisconnect),
 									m_userData(socket.m_userData)
 	{
-		socket.m_socket = INVALID_SOCKET;
+		socket.m_socket = NETSOCKET_INVALID_SOCKET_HANDLE;
 		socket.m_ipaFamily = 0;
 		socket.m_socketType = 0;
 		socket.m_ipProtocol = 0;
@@ -112,7 +132,7 @@ namespace netsocket
 		m_isConnected = socket.m_isConnected;
 		m_isValid = socket.m_isValid;
 
-		socket.m_socket = INVALID_SOCKET;
+		socket.m_socket = NETSOCKET_INVALID_SOCKET_HANDLE;
 		socket.m_ipaFamily = 0;
 		socket.m_socketType = 0;
 		socket.m_ipProtocol = 0;
@@ -132,16 +152,16 @@ namespace netsocket
 
 	Result Socket::listen()
 	{
-		if(::listen(m_socket, SOMAXCONN) == SOCKET_ERROR)
+		if(::listen(m_socket, SOMAXCONN) == NETSOCKET_SOCKET_ERROR)
 			return Result::SocketError;
 		return Result::Success;
 	}
 
 	std::optional<Socket> Socket::accept()
 	{
-		SOCKET acceptedSocket = INVALID_SOCKET;
+		SocketHandle acceptedSocket = NETSOCKET_INVALID_SOCKET_HANDLE;
 		acceptedSocket = ::accept(m_socket, NULL, NULL);
-		if(acceptedSocket == INVALID_SOCKET)
+		if(acceptedSocket == NETSOCKET_INVALID_SOCKET_HANDLE)
 			return { };
 		return { Socket::CreateAcceptedSocket(acceptedSocket, m_socketType, m_ipaFamily, m_ipProtocol) };
 	}
@@ -167,7 +187,7 @@ namespace netsocket
 
 		result = ::bind(m_socket, addressInfo->ai_addr, (int)addressInfo->ai_addrlen);
 
-		if(result == SOCKET_ERROR)
+		if(result == NETSOCKET_SOCKET_ERROR)
 		{
 			freeaddrinfo(addressInfo);
 			m_isValid = false;
@@ -198,7 +218,7 @@ namespace netsocket
 
 		result = ::connect(m_socket, addressInfo->ai_addr, (int)addressInfo->ai_addrlen);
 
-		if(result == SOCKET_ERROR)
+		if(result == NETSOCKET_SOCKET_ERROR)
 		{
 			freeaddrinfo(addressInfo);
 			m_isValid = false;
@@ -214,7 +234,7 @@ namespace netsocket
 		if(!m_isConnected)
 			return Result::Success;
 
-		if(closesocket(m_socket) == SOCKET_ERROR)
+		if(closesocket(m_socket) == NETSOCKET_SOCKET_ERROR)
 		{
 			m_isValid = false;
 			m_isConnected = false;
@@ -233,7 +253,7 @@ namespace netsocket
 		while(numSentBytes < size)
 		{
 			int result = ::send(m_socket, reinterpret_cast<const char*>(bytes + numSentBytes), size - numSentBytes, 0);
-			if(result == SOCKET_ERROR)
+			if(result == NETSOCKET_SOCKET_ERROR)
 			{
 				m_isValid = false;
 				m_isConnected = false;
@@ -255,7 +275,7 @@ namespace netsocket
 		while(numReceivedBytes < size)
 		{
 			int result = ::recv(m_socket, reinterpret_cast<char*>(bytes + numReceivedBytes), size - numReceivedBytes, 0);
-			if(result == SOCKET_ERROR)
+			if(result == NETSOCKET_SOCKET_ERROR)
 			{
 				m_isValid = false;
 				m_isConnected = false;
