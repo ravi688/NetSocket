@@ -51,6 +51,11 @@ project('NetSocket', 'c', 'cpp',
 )
 
 # Variables
+sources = [
+'source/netsocket.cpp',
+'source/netinterface.cpp',
+'source/assert.cpp'
+]
 
 
 # Defines
@@ -70,7 +75,7 @@ debug_defines_bm_internal__ = [
 
 # Source files (common to all targets)
 sources_bm_internal__ = files(
-'source/netsocket.cpp', 'source/assert.cpp'
+
 )
 
 # Include directories
@@ -178,7 +183,7 @@ pkgmod = import('pkgconfig')
 
 # -------------- Target: netsocket_static ------------------
 netsocket_static_sources_bm_internal__ = [
-
+sources
 ]
 netsocket_static_include_dirs_bm_internal__ = [
 
@@ -223,7 +228,7 @@ pkgmod.generate(netsocket_static,
 
 # -------------- Target: netsocket_shared ------------------
 netsocket_shared_sources_bm_internal__ = [
-
+sources
 ]
 netsocket_shared_include_dirs_bm_internal__ = [
 
@@ -291,7 +296,11 @@ test_server = executable('test_server',
 	install: false,
 	c_args: test_server_defines_bm_internal__ + project_build_mode_defines_bm_internal__,
 	cpp_args: test_server_defines_bm_internal__ + project_build_mode_defines_bm_internal__, 
-	link_args: test_server_link_args_bm_internal__[host_machine.system()],
+	link_args: test_server_link_args_bm_internal__[host_machine.system()], 
+	link_with: [
+netsocket_static
+]
+,
 	gnu_symbol_visibility: 'hidden'
 )
 
@@ -320,7 +329,11 @@ test_client = executable('test_client',
 	install: false,
 	c_args: test_client_defines_bm_internal__ + project_build_mode_defines_bm_internal__,
 	cpp_args: test_client_defines_bm_internal__ + project_build_mode_defines_bm_internal__, 
-	link_args: test_client_link_args_bm_internal__[host_machine.system()],
+	link_args: test_client_link_args_bm_internal__[host_machine.system()], 
+	link_with: [
+netsocket_static
+]
+,
 	gnu_symbol_visibility: 'hidden'
 )
 
