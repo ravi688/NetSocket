@@ -21,7 +21,7 @@ namespace netsocket
 		return stream.str();
 	}
 
-        NETSOCKET_API std::vector<std::pair<std::string, IPv4Address>> GetInterfaceIPv4Addresses()
+	NETSOCKET_API std::vector<std::pair<std::string, IPv4Address>> GetInterfaceIPv4Addresses()
 	{
 		std::vector<std::pair<std::string, IPv4Address>> addresses;
 
