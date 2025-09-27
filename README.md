@@ -3,6 +3,7 @@ Cross platform Networking Programming library which works on Linux and Windows b
 
 ## Building
 ```
+build_master_meson wrap install spdlog
 build_master meson setup build
 build_master meson compile -C build
 ```
