@@ -48,5 +48,9 @@ int main()
 	result = clientSocket->send(reinterpret_cast<const u8*>(data), std::strlen(data));
 	netsocket_assert(result == netsocket::Result::Success);
 
+	result = clientSocket->close();
+	netsocket_assert(result == netsocket::Result::Success);
+	spdlog::info("Connection closed successfully");
+
 	return 0;
 }

@@ -48,5 +48,9 @@ int main()
 	netsocket_assert(isEqual);
 	spdlog::info("Received data is correct");
 
+	result = mySocket.close();
+	netsocket_assert(result == netsocket::Result::Success);
+	spdlog::info("Connection closed successfully");
+
 	return 0;
 }
