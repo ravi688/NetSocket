@@ -21,7 +21,7 @@ int main()
 		++index;
 	}
 
-	std::string ipAddress = netsocket::TrySelectingPhysicalInterfaceIPAddress(ipAddresses);
+	std::string ipAddress = netsocket::TrySelectingPhysicalInterfaceIPAddress(ipAddresses, "192.168.1.1");
 
 	spdlog::info("Selected IP address: {}", ipAddress);
 
@@ -41,6 +41,12 @@ int main()
 	netsocket_assert(clientSocket->isConnected());
 
 	spdlog::info("Connection accepted");
+
+	spdlog::info("Sending data...");
+
+	const char* data = "Hello World";
+	result = clientSocket->send(reinterpret_cast<const u8*>(data), std::strlen(data));
+	netsocket_assert(result == netsocket::Result::Success);
 
 	return 0;
 }
