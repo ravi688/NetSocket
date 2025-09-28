@@ -114,6 +114,7 @@ namespace netsocket
 						{
 							case Type::LengthU32: { m_lengthFeedback = (*reinterpret_cast<u32*>(ptr)); break; } 
 							case Type::LengthU64: { m_lengthFeedback = (*reinterpret_cast<u64*>(ptr)); break; }
+							default: netsocket_assert(false && "Unsupported Type, for now.");
 						}
 					}
 					next = getNext();
@@ -159,35 +160,51 @@ namespace netsocket
 		};
 	
 	private:
-		Socket& m_socketRef;
-		std::optional<Socket> m_socket;
+		Socket m_socket;
 		std::deque<Transxn> m_transxnQueue;
-		std::condition_variable m_dataAvailableCV;
+
 		std::unique_ptr<std::thread> m_thread;
-		std::mutex m_mutex;
+		// Contains non-movable variables
+		struct ThreadSynchronizationData
+		{
+			std::condition_variable dataAvailableCV;
+			std::mutex mutex;
+			std::atomic<bool> isCanSendOrReceive;
+			std::atomic<bool> isStopThread;
+		};
+		// This can now be moved.
+		std::unique_ptr<ThreadSynchronizationData> m_threadSyncData;
 		bool m_isValid;
-		std::atomic<bool> m_isCanSendOrReceive;
-		std::atomic<bool> m_isStopThread;
 			
 		void threadHandler();
 		
 	public:
+		// Constructing AsyncSocket using Socket
+		template<typename... Args>
+		AsyncSocket(Args&&... args) : AsyncSocket(Socket(std::forward<Args>(args)...)) { }
 		AsyncSocket(Socket&& socket);
-		AsyncSocket(Socket& socket);
+
+		// Movable
+		// Move constructing AsyncSocket
+		AsyncSocket(AsyncSocket&& asyncSocket) = default;
+		AsyncSocket& operator=(AsyncSocket&& asyncSocket) = default;
+
+		// Not Copyable
 		AsyncSocket(AsyncSocket& asyncSocket) = delete;
-		AsyncSocket& operator=(AsyncSocket& asyncSocket) = delete;
-		AsyncSocket(AsyncSocket&& asyncSocket) = delete;
-		AsyncSocket& operator=(AsyncSocket&& asyncSocket) = delete;
+
 		virtual ~AsyncSocket();
 		
-		Result connect(const char* ipAddress, const char* port);
+		Result listen();
+		std::optional<AsyncSocket> accept();
+		Result bind(const std::string_view ipAddress, const std::string_view port);
+		Result connect(const std::string_view ipAddress, const std::string_view port);
 		Result close();
 		// Call to this function is asynchronous, i.e. it returns immediately
 		void send(const u8* bytes, u32 size);
 		// Call to this function is asynchronous, i.e. it returns immediately
 		void receive(Transxn::ReceiveCallbackHandler receiveHandler, void* userData, BinaryFormatter& receiveFormatter);
 
-		Socket& getSocket() { return m_socketRef; }
-		bool isCanSendOrReceive() const { return m_isCanSendOrReceive; }
+		Socket& getSocket() { return m_socket; }
+		bool isCanSendOrReceive() const { return m_threadSyncData->isCanSendOrReceive; }
 	};
 }

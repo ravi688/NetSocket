@@ -100,22 +100,21 @@ namespace netsocket
 		return false;
 	}
 	
-	AsyncSocket::AsyncSocket(Socket&& socket) : AsyncSocket(*m_socket)
+	AsyncSocket::AsyncSocket(Socket&& socket) : m_socket(std::move(socket)), m_isValid(false)
 	{
-		m_socket = std::move(socket);
-	}
-
-	AsyncSocket::AsyncSocket(Socket& socket) : m_socketRef(socket), m_isValid(false), m_isCanSendOrReceive(false)
-	{
+		m_threadSyncData = std::make_unique<ThreadSynchronizationData>();
 		m_isValid = true; 
-		if(m_socketRef.isConnected())
+		if(m_socket.isConnected())
 		{
-			m_isCanSendOrReceive = true;
-			m_isStopThread = false;
+			m_threadSyncData->isCanSendOrReceive = true;
+			m_threadSyncData->isStopThread = false;
 			m_thread = std::move(std::unique_ptr<std::thread>(new std::thread(&AsyncSocket::threadHandler, this)));
 		}
 		else 
-			m_isStopThread = true;
+		{
+			m_threadSyncData->isCanSendOrReceive = false;
+			m_threadSyncData->isStopThread = true;
+		}
 	}
 
 	AsyncSocket::~AsyncSocket()
@@ -123,16 +122,40 @@ namespace netsocket
 		if(m_isValid)
 			close();
 	}
-	
-	Result AsyncSocket::connect(const char* ipAddress, const char* port)
+
+	Result AsyncSocket::listen()
 	{
-		std::lock_guard<std::mutex> lock(m_mutex);
-		netsocket_assert(!m_socketRef.isConnected() && "Already connected AsyncSocket, first close it");
-		auto result = m_socketRef.connect(ipAddress, port);
+		std::lock_guard<std::mutex> lock(m_threadSyncData->mutex);
+		return m_socket.listen();
+	}
+	
+	std::optional<AsyncSocket> AsyncSocket::accept()
+	{
+		std::lock_guard<std::mutex> lock(m_threadSyncData->mutex);
+		std::optional<Socket> acceptedSocket = m_socket.accept();
+		if(acceptedSocket)
+		{
+			AsyncSocket acceptedAsyncSocket { std::move(acceptedSocket.value()) };
+			return { std::move(acceptedAsyncSocket) };
+		}
+		return { };
+	}
+
+	Result AsyncSocket::bind(const std::string_view ipAddress, const std::string_view port)
+	{
+		std::lock_guard<std::mutex> lock(m_threadSyncData->mutex);
+		return m_socket.bind(ipAddress, port);
+	}
+	
+	Result AsyncSocket::connect(const std::string_view ipAddress, const std::string_view port)
+	{
+		std::lock_guard<std::mutex> lock(m_threadSyncData->mutex);
+		netsocket_assert(!m_socket.isConnected() && "Already connected AsyncSocket, first close it");
+		auto result = m_socket.connect(ipAddress, port);
 		if(result == Result::Success)
 		{
-			m_isCanSendOrReceive = true;
-			m_isStopThread = false;
+			m_threadSyncData->isCanSendOrReceive = true;
+			m_threadSyncData->isStopThread = false;
 			m_thread = std::unique_ptr<std::thread>(new std::thread(&AsyncSocket::threadHandler, this));
 		}
 		return result;
@@ -142,18 +165,15 @@ namespace netsocket
 	{
 		Result result = Result::Success;
 		{
-			std::lock_guard<std::mutex> lock(m_mutex);
-			if(m_socket.has_value())
-			{
-				result = m_socketRef.close();
-				if(result != Result::Success)
-					return result;
-			}
+			std::lock_guard<std::mutex> lock(m_threadSyncData->mutex);
+			result = m_socket.close();
+			if(result != Result::Success)
+				return result;
 		}
 		if(m_thread)
 		{
-			m_isStopThread = true;
-			m_dataAvailableCV.notify_one();
+			m_threadSyncData->isStopThread = true;
+			m_threadSyncData->dataAvailableCV.notify_one();
 			if(m_thread->joinable())
 				m_thread->join();
 		}
@@ -163,19 +183,19 @@ namespace netsocket
 	void AsyncSocket::send(const u8* bytes, u32 size)
 	{
 		Transxn transxn(bytes, size, Transxn::Type::Send);
-		std::unique_lock<std::mutex> lock(m_mutex);
+		std::unique_lock<std::mutex> lock(m_threadSyncData->mutex);
 		m_transxnQueue.push_front(std::move(transxn));
 		lock.unlock();
-		m_dataAvailableCV.notify_one();
+		m_threadSyncData->dataAvailableCV.notify_one();
 	}
 	
 	void AsyncSocket::receive(Transxn::ReceiveCallbackHandler receiveHandler, void* userData, BinaryFormatter& receiveFormatter)
 	{
 		Transxn transxn(receiveHandler, userData, receiveFormatter, Transxn::Type::Receive);
-		std::unique_lock<std::mutex> lock(m_mutex);
+		std::unique_lock<std::mutex> lock(m_threadSyncData->mutex);
 		m_transxnQueue.push_front(std::move(transxn));
 		lock.unlock();
-		m_dataAvailableCV.notify_one();
+		m_threadSyncData->dataAvailableCV.notify_one();
 	}
 	
 	void AsyncSocket::threadHandler()
@@ -183,10 +203,10 @@ namespace netsocket
 		while(true)
 		{
 			/* lock and copy/move the Transxn object into the local storage of this thread */
-			std::unique_lock<std::mutex> lock(m_mutex);
-			while(m_transxnQueue.empty() && (!m_isStopThread))
-				m_dataAvailableCV.wait(lock);
-			if(m_isStopThread)
+			std::unique_lock<std::mutex> lock(m_threadSyncData->mutex);
+			while(m_transxnQueue.empty() && (!m_threadSyncData->isStopThread))
+				m_threadSyncData->dataAvailableCV.wait(lock);
+			if(m_threadSyncData->isStopThread)
 				break;
 			// debug_log_info("Request received for Data Receive");
 			Transxn transxn(std::move(m_transxnQueue.back()));
@@ -194,10 +214,10 @@ namespace netsocket
 			lock.unlock();
 
 			/* Transxn::doit takes a long time to process due to network latency */
-			bool result = transxn.doit(m_socketRef);
+			bool result = transxn.doit(m_socket);
 			if(!result)
 			{
-				m_isCanSendOrReceive = false;
+				m_threadSyncData->isCanSendOrReceive = false;
 				spdlog::error("Failed to do transaction");
 					
 				lock.lock();

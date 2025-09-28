@@ -89,10 +89,14 @@ namespace netsocket
 		}
 
 		Socket(SocketType socketType, IPAddressFamily ipAddressFamily, IPProtocol ipProtocol);
+		
+		// Movable
 		Socket(Socket&& socket);
 		Socket& operator=(Socket&& socket);
+
+		// Not copyable
 		Socket(Socket& socket) = delete;
-		Socket& operator=(Socket& socket) = delete;
+		
 		~Socket();
 
 		bool isConnected() const noexcept { return m_isConnected && isValid(); }
