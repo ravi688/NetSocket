@@ -69,14 +69,14 @@ def main():
         client_rc = client.returncode
         server_rc = server.returncode
 
-        print("=== Client Output ===")
-        print(client_stdout.decode(errors="ignore"), end="")
-        print(client_stderr.decode(errors="ignore"), end="")
-        print("=====================\n")
-
         print("=== Server Output ===")
         print(server_stdout.decode(errors="ignore"), end="")
         print(server_stderr.decode(errors="ignore"), end="")
+        print("=====================\n")
+
+        print("=== Client Output ===")
+        print(client_stdout.decode(errors="ignore"), end="")
+        print(client_stderr.decode(errors="ignore"), end="")
         print("=====================\n")
 
         if client_rc != 0:
