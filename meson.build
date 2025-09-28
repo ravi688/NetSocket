@@ -53,6 +53,7 @@ project('NetSocket', 'c', 'cpp',
 # Variables
 sources = [
 'source/netsocket.cpp',
+'source/netasyncsocket.cpp',
 'source/netinterface.cpp',
 'source/assert.cpp'
 ]
@@ -89,7 +90,8 @@ lib_install_dir_bm_internal__ = get_option('libdir')/'netsocket'
 # Dependencies
 dependencies_bm_internal__ = [
 dependency('common'),
-dependency('spdlog')
+dependency('spdlog'),
+dependency('bufferlib')
 ]
 
 # Linker Arguments

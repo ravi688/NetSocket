@@ -1,7 +1,7 @@
 {
     "project_name": "NetSocket",
     "canonical_name": "netsocket",
-    "dependencies" : [ "common", "spdlog" ],
+    "dependencies" : [ "common", "spdlog", "bufferlib" ],
     "include_dirs": "include",
     "debug_defines" : [ "-DNETSOCKET_DEBUG" ],
     "release_defines" : [ "-DNETSOCKET_RELEASE" ],
@@ -10,6 +10,7 @@
     {
 	    "sources" : [
 		    "source/netsocket.cpp",
+            "source/netasyncsocket.cpp",
 		    "source/netinterface.cpp",
 		    "source/assert.cpp"
 	    ]
