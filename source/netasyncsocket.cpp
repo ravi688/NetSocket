@@ -112,7 +112,7 @@ namespace netsocket
 		{
 			m_isCanSendOrReceive = true;
 			m_isStopThread = false;
-			m_thread = std::move(std::unique_ptr<std::thread>(new std::thread(threadHandler, this)));
+			m_thread = std::move(std::unique_ptr<std::thread>(new std::thread(&AsyncSocket::threadHandler, this)));
 		}
 		else 
 			m_isStopThread = true;
@@ -133,7 +133,7 @@ namespace netsocket
 		{
 			m_isCanSendOrReceive = true;
 			m_isStopThread = false;
-			m_thread = std::unique_ptr<std::thread>(new std::thread(threadHandler, this));
+			m_thread = std::unique_ptr<std::thread>(new std::thread(&AsyncSocket::threadHandler, this));
 		}
 		return result;
 	}
