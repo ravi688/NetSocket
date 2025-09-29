@@ -185,6 +185,9 @@ namespace netsocket
 
 		netsocket_assert((addressInfo->ai_family == m_ipaFamily) && (addressInfo->ai_socktype == m_socketType) && (addressInfo->ai_protocol == m_ipProtocol));
 
+		int opt = 1;
+		setsockopt(m_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+
 		result = ::bind(m_socket, addressInfo->ai_addr, (int)addressInfo->ai_addrlen);
 
 		freeaddrinfo(addressInfo);
