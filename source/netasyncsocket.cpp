@@ -243,6 +243,8 @@ namespace netsocket
 
 			lock.lock();
 			m_transxnQueue.pop_back();
+			if(m_transxnQueue.empty())
+				m_finishCV.notify_all();
 			lock.unlock();
 		}
 	}
