@@ -47,6 +47,22 @@
             "sources" : [
                 "source/main.client.cpp"
             ]
+        },
+        {
+            "name" : "test_server_async_socket",
+            "is_executable" : true,
+            "link_with" : [ "netsocket_static" ],
+            "sources" : [
+                "source/main.server_async_socket.cpp"
+            ]
+        },
+        {
+            "name" : "test_client_async_socket",
+            "is_executable" : true,
+            "link_with" : [ "netsocket_static" ],
+            "sources" : [
+                "source/main.client_async_socket.cpp"
+            ]
         }
     ]
 }

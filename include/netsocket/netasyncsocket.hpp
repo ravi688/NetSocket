@@ -161,19 +161,14 @@ namespace netsocket
 	
 	private:
 		Socket m_socket;
-		std::deque<Transxn> m_transxnQueue;
-
 		std::unique_ptr<std::thread> m_thread;
-		// Contains non-movable variables
-		struct ThreadSynchronizationData
-		{
-			std::condition_variable dataAvailableCV;
-			std::mutex mutex;
-			std::atomic<bool> isCanSendOrReceive;
-			std::atomic<bool> isStopThread;
-		};
-		// This can now be moved.
-		std::unique_ptr<ThreadSynchronizationData> m_threadSyncData;
+		std::deque<Transxn> m_transxnQueue;
+		std::condition_variable m_dataAvailableCV;
+		std::condition_variable m_finishCV;
+		std::mutex m_mutex;
+		std::atomic<bool> m_isCanSendOrReceive;
+		std::atomic<bool> m_isStopThread;
+		std::atomic<bool> m_isTransactionError;
 		bool m_isValid;
 			
 		void threadHandler();
@@ -184,20 +179,22 @@ namespace netsocket
 		AsyncSocket(Args&&... args) : AsyncSocket(Socket(std::forward<Args>(args)...)) { }
 		AsyncSocket(Socket&& socket);
 
-		// Movable
-		// Move constructing AsyncSocket
-		AsyncSocket(AsyncSocket&& asyncSocket) = default;
-		AsyncSocket& operator=(AsyncSocket&& asyncSocket) = default;
+		// Not Movable
+		AsyncSocket(AsyncSocket&& asyncSocket) = delete;
 
 		// Not Copyable
 		AsyncSocket(AsyncSocket& asyncSocket) = delete;
 
 		virtual ~AsyncSocket();
 		
+		bool isConnected() const { return m_socket.isConnected() && isValid(); }
+		bool isValid() const noexcept { return m_isValid; }
+
 		Result listen();
 		std::optional<AsyncSocket> accept();
 		Result bind(const std::string_view ipAddress, const std::string_view port);
 		Result connect(const std::string_view ipAddress, const std::string_view port);
+		Result finish();
 		Result close();
 		// Call to this function is asynchronous, i.e. it returns immediately
 		void send(const u8* bytes, u32 size);
@@ -205,6 +202,6 @@ namespace netsocket
 		void receive(Transxn::ReceiveCallbackHandler receiveHandler, void* userData, BinaryFormatter& receiveFormatter);
 
 		Socket& getSocket() { return m_socket; }
-		bool isCanSendOrReceive() const { return m_threadSyncData->isCanSendOrReceive; }
+		bool isCanSendOrReceive() const { return m_isCanSendOrReceive; }
 	};
 }
