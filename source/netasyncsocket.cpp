@@ -185,6 +185,8 @@ namespace netsocket
 			m_isStopThread = true;
 			m_dataAvailableCV.notify_one();
 			finish();
+			if(m_thread->joinable())
+				m_thread->join();
 		}
 		return result;
 	}
