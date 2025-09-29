@@ -185,8 +185,13 @@ namespace netsocket
 
 		netsocket_assert((addressInfo->ai_family == m_ipaFamily) && (addressInfo->ai_socktype == m_socketType) && (addressInfo->ai_protocol == m_ipProtocol));
 
+#ifdef PLATFORM_WINDOWS
+		BOOL opt = TRUE;
+		setsockopt(m_socket, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char*>(&opt), sizeof(opt));
+#else // PLATFORM_LINUX
 		int opt = 1;
 		setsockopt(m_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+#endif
 
 		result = ::bind(m_socket, addressInfo->ai_addr, (int)addressInfo->ai_addrlen);
 
