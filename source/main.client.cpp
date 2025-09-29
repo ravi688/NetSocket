@@ -6,6 +6,8 @@
 #include <netsocket/netinterface.hpp>
 #include <netsocket/assert.hpp>
 
+#include <cstring> // for std::memcmp
+
 static constexpr std::string_view gPortNumber = "8000";
 
 int main()
@@ -21,7 +23,7 @@ int main()
                 ++index;
         }
 
-        std::string ipAddress = netsocket::TrySelectingPhysicalInterfaceIPAddress(ipAddresses);
+        std::string ipAddress = netsocket::TrySelectingPhysicalInterfaceIPAddress(ipAddresses, "192.168.1.1");
 
         spdlog::info("Selected IP address: {}", ipAddress);
 
@@ -34,6 +36,21 @@ int main()
 	netsocket_assert((result == netsocket::Result::Success) && "Failed to connect");
 
 	spdlog::info("Connection successful");
+
+	spdlog::info("Receiving Data...");
+
+	constexpr char* refData = "Hello World";
+	constexpr u32 refDataLen = std::strlen(refData);
+	char receiveBuffer[refDataLen];
+	result = mySocket.receive(reinterpret_cast<u8*>(receiveBuffer), refDataLen);
+	netsocket_assert(result == netsocket::Result::Success);
+	bool isEqual = std::memcmp(receiveBuffer, refData, refDataLen) == 0;
+	netsocket_assert(isEqual);
+	spdlog::info("Received data is correct");
+
+	result = mySocket.close();
+	netsocket_assert(result == netsocket::Result::Success);
+	spdlog::info("Connection closed successfully");
 
 	return 0;
 }

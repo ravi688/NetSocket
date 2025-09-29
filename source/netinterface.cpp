@@ -12,11 +12,20 @@
 #endif
 
 #include <ranges>
+#include <algorithm>
 #include <string>
 #include <sstream>
 
 namespace netsocket
 {
+	IPv4Address::IPv4Address(const std::string_view str)
+	{
+		for(u32 i = 0; const auto part : std::views::split(str, '.'))
+		{
+			netsocket_assert(i < parts.size());
+			parts[i++] = std::stoul(std::string(part.begin(), part.end()));
+		}
+	}
 	std::string IPv4Address::str() const
 	{
 		std::stringstream stream;
@@ -83,10 +92,7 @@ namespace netsocket
 			{
 				struct sockaddr_in *addr = (struct sockaddr_in*)ifa->ifa_addr;
 				inet_ntop(AF_INET, &addr->sin_addr, ip, sizeof(ip));
-				std::string s { ip };
-				IPv4Address ipAddress;
-				for(u32 i = 0; auto part : std::views::split(s, '.'))
-					ipAddress[i++] = std::stoul(std::string {part.begin(), part.end() });
+				IPv4Address ipAddress { std::string_view { ip } };
 				std::string ifName { ifa->ifa_name };
 				addresses.push_back({ ifName, ipAddress });
 			}
@@ -97,26 +103,35 @@ namespace netsocket
 		return addresses;
 	}
 
-	NETSOCKET_API std::string TrySelectingPhysicalInterfaceIPAddress(const std::vector<std::pair<std::string, IPv4Address>>& ipAddresses)
+	NETSOCKET_API std::string TrySelectingPhysicalInterfaceIPAddress(const std::vector<std::pair<std::string, IPv4Address>>& ipAddresses, std::string_view prefix)
 	{
-		auto it = std::ranges::find_if(ipAddresses, [](const auto& pair)
+		std::vector<std::pair<std::string, IPv4Address>> filtered;
+		std::ranges::copy_if(ipAddresses,
+							std::back_inserter(filtered),
+							[](const auto& pair)
                         {
-				const std::string& interfaceName = pair.first;
+                        	const std::string& interfaceName = pair.first;
 #ifdef PLATFORM_WINDOWS
-                                return interfaceName.starts_with("Ethernet") ||
+                        	return interfaceName.starts_with("Ethernet") ||
                                 	interfaceName.starts_with("Wireless LAN") ||
                                 	interfaceName.starts_with("Network Bridge");
 #else // if PLATFORM_LINUX
-                                return interfaceName.starts_with("en") ||
+                            return interfaceName.starts_with("en") ||
                                 	interfaceName.starts_with("eth") ||
                                 	interfaceName.starts_with("wl");
 #endif
                         });
-		std::string ipAddress;
-		if(it != ipAddresses.end())
-			ipAddress = it->second.str();
-		else
-			ipAddress = "127.0.0.1";
-		return ipAddress;
+		const IPv4Address ipv4Prefix { prefix };
+		// Match the IPV4 address which matches the most (longest prefix match)
+		for(u32 i = 4; i > 0; --i)
+		{
+			for(const auto& pair : filtered)
+			{
+				bool isMatch = std::equal(ipv4Prefix.begin(), std::next(ipv4Prefix.begin(), i), pair.second.begin());
+				if(isMatch)
+					return pair.second.str();
+			}
+		}
+		return (filtered.size() == 0) ? "127.0.0.1" : filtered[0].second.str();
 	}
 } 

@@ -53,6 +53,7 @@ project('NetSocket', 'c', 'cpp',
 # Variables
 sources = [
 'source/netsocket.cpp',
+'source/netasyncsocket.cpp',
 'source/netinterface.cpp',
 'source/assert.cpp'
 ]
@@ -89,7 +90,8 @@ lib_install_dir_bm_internal__ = get_option('libdir')/'netsocket'
 # Dependencies
 dependencies_bm_internal__ = [
 dependency('common'),
-dependency('spdlog')
+dependency('spdlog'),
+dependency('bufferlib')
 ]
 
 # Linker Arguments
@@ -330,6 +332,72 @@ test_client = executable('test_client',
 	c_args: test_client_defines_bm_internal__ + project_build_mode_defines_bm_internal__,
 	cpp_args: test_client_defines_bm_internal__ + project_build_mode_defines_bm_internal__, 
 	link_args: test_client_link_args_bm_internal__[host_machine.system()], 
+	link_with: [
+netsocket_static
+]
+,
+	gnu_symbol_visibility: 'hidden'
+)
+
+# -------------- Target: test_server_async_socket ------------------
+test_server_async_socket_sources_bm_internal__ = [
+'source/main.server_async_socket.cpp'
+]
+test_server_async_socket_include_dirs_bm_internal__ = [
+
+]
+test_server_async_socket_dependencies_bm_internal__ = [
+
+]
+test_server_async_socket_link_args_bm_internal__ = {
+'windows' : [],
+'linux' : [],
+'darwin' : []
+}
+test_server_async_socket_defines_bm_internal__ = [
+
+]
+test_server_async_socket = executable('test_server_async_socket',
+	test_server_async_socket_sources_bm_internal__ + sources_bm_internal__,
+	dependencies: dependencies_bm_internal__ + test_server_async_socket_dependencies_bm_internal__,
+	include_directories: [inc_bm_internal__, test_server_async_socket_include_dirs_bm_internal__],
+	install: false,
+	c_args: test_server_async_socket_defines_bm_internal__ + project_build_mode_defines_bm_internal__,
+	cpp_args: test_server_async_socket_defines_bm_internal__ + project_build_mode_defines_bm_internal__, 
+	link_args: test_server_async_socket_link_args_bm_internal__[host_machine.system()], 
+	link_with: [
+netsocket_static
+]
+,
+	gnu_symbol_visibility: 'hidden'
+)
+
+# -------------- Target: test_client_async_socket ------------------
+test_client_async_socket_sources_bm_internal__ = [
+'source/main.client_async_socket.cpp'
+]
+test_client_async_socket_include_dirs_bm_internal__ = [
+
+]
+test_client_async_socket_dependencies_bm_internal__ = [
+
+]
+test_client_async_socket_link_args_bm_internal__ = {
+'windows' : [],
+'linux' : [],
+'darwin' : []
+}
+test_client_async_socket_defines_bm_internal__ = [
+
+]
+test_client_async_socket = executable('test_client_async_socket',
+	test_client_async_socket_sources_bm_internal__ + sources_bm_internal__,
+	dependencies: dependencies_bm_internal__ + test_client_async_socket_dependencies_bm_internal__,
+	include_directories: [inc_bm_internal__, test_client_async_socket_include_dirs_bm_internal__],
+	install: false,
+	c_args: test_client_async_socket_defines_bm_internal__ + project_build_mode_defines_bm_internal__,
+	cpp_args: test_client_async_socket_defines_bm_internal__ + project_build_mode_defines_bm_internal__, 
+	link_args: test_client_async_socket_link_args_bm_internal__[host_machine.system()], 
 	link_with: [
 netsocket_static
 ]

@@ -1,7 +1,7 @@
 {
     "project_name": "NetSocket",
     "canonical_name": "netsocket",
-    "dependencies" : [ "common", "spdlog" ],
+    "dependencies" : [ "common", "spdlog", "bufferlib" ],
     "include_dirs": "include",
     "debug_defines" : [ "-DNETSOCKET_DEBUG" ],
     "release_defines" : [ "-DNETSOCKET_RELEASE" ],
@@ -10,6 +10,7 @@
     {
 	    "sources" : [
 		    "source/netsocket.cpp",
+            "source/netasyncsocket.cpp",
 		    "source/netinterface.cpp",
 		    "source/assert.cpp"
 	    ]
@@ -21,7 +22,7 @@
             "is_install" : true,
             "build_defines" : [ "-DNETSOCKET_BUILD_STATIC_LIBRARY" ],
             "use_defines" : [ "-DNETSOCKET_USE_STATIC_LIBRARY" ],
-	    "sources" : [ "$sources" ]
+            "sources" : [ "$sources" ]
         },
         {
             "name" : "netsocket_shared",
@@ -29,12 +30,12 @@
             "is_install" : true,
             "build_defines" : [ "-DNETSOCKET_BUILD_SHARED_LIBRARY" ],
             "use_defines" : [ "-DNETSOCKET_USE_SHARED_LIBRARY" ],
-	    "sources" : [ "$sources" ]
+            "sources" : [ "$sources" ]
         },
         {
             "name": "test_server",
             "is_executable": true,
-	    "link_with" : [ "netsocket_static" ],
+            "link_with" : [ "netsocket_static" ],
             "sources": [
                 "source/main.server.cpp"
             ]
@@ -42,9 +43,25 @@
         {
             "name" : "test_client",
             "is_executable" : true,
-	    "link_with" : [ "netsocket_static" ],
+            "link_with" : [ "netsocket_static" ],
             "sources" : [
                 "source/main.client.cpp"
+            ]
+        },
+        {
+            "name" : "test_server_async_socket",
+            "is_executable" : true,
+            "link_with" : [ "netsocket_static" ],
+            "sources" : [
+                "source/main.server_async_socket.cpp"
+            ]
+        },
+        {
+            "name" : "test_client_async_socket",
+            "is_executable" : true,
+            "link_with" : [ "netsocket_static" ],
+            "sources" : [
+                "source/main.client_async_socket.cpp"
             ]
         }
     ]
