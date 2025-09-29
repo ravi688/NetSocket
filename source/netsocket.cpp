@@ -187,9 +187,9 @@ namespace netsocket
 
 		result = ::bind(m_socket, addressInfo->ai_addr, (int)addressInfo->ai_addrlen);
 
+		freeaddrinfo(addressInfo);
 		if(result == NETSOCKET_SOCKET_ERROR)
 		{
-			freeaddrinfo(addressInfo);
 			m_isValid = false;
 			return Result::SocketError;
 		}
