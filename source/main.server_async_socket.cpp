@@ -10,7 +10,7 @@ static constexpr std::string_view gPortNumber = "8000";
 
 int main()
 {
-	spdlog::info("NetSocket server");
+	spdlog::info("NetSocket Async Socket server");
 
 	std::vector<std::pair<std::string, netsocket::IPv4Address>> ipAddresses = netsocket::GetInterfaceIPv4Addresses();
 	spdlog::info("Following IPv4 Addresses have been assigned to interfaces on this machine:");

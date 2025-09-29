@@ -8,18 +8,12 @@ import platform
 SERVER_TIMEOUT = 10  # seconds
 CLIENT_TIMEOUT = 10  # seconds
 
-def main():
-    if len(sys.argv) != 2:
-        print(f"Usage: {sys.argv[0]} <build_directory>")
-        sys.exit(1)
-
-    build_dir = sys.argv[1]
-
+def test(build_dir : str, server : str, client : str):
     # Detect platform and add .exe suffix if on Windows
     exe_suffix = ".exe" if platform.system().lower().startswith("win") else ""
 
-    server_path = os.path.join(build_dir, f"test_server{exe_suffix}")
-    client_path = os.path.join(build_dir, f"test_client{exe_suffix}")
+    server_path = os.path.join(build_dir, f"{server}{exe_suffix}")
+    client_path = os.path.join(build_dir, f"{client}{exe_suffix}")
 
     if not os.path.isfile(server_path):
         print(f"❌ Server executable not found: {server_path}")
@@ -92,6 +86,16 @@ def main():
     except Exception as e:
         print(f"Error: {e}")
         sys.exit(1)
+
+def main():
+    if len(sys.argv) != 2:
+        print(f"Usage: {sys.argv[0]} <build_directory>")
+        sys.exit(1)
+
+    build_dir = sys.argv[1]
+
+    test(build_dir, "test_server", "test_client")
+    test(build_dir, "test_server_async_socket", "test_client_async_socket")
 
 if __name__ == "__main__":
     main()

@@ -18,7 +18,7 @@ static bool gIsReceiveDone = false;
 
 int main()
 {
-	spdlog::info("NetSocket client");
+	spdlog::info("NetSocket Async Socket client");
 
         std::vector<std::pair<std::string, netsocket::IPv4Address>> ipAddresses = netsocket::GetInterfaceIPv4Addresses();
         spdlog::info("Following IPv4 Addresses have been assigned to interfaces on this machine:");
