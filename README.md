@@ -11,3 +11,8 @@ build_master meson compile -C build
 ```
 python client_server_test.py build
 ```
+## Examples
+1. https://github.com/ravi688/NetSocket/blob/main/source/main.client.cpp
+2. https://github.com/ravi688/NetSocket/blob/main/source/main.server.cpp
+3. https://github.com/ravi688/NetSocket/blob/main/source/main.client_async_socket.cpp
+4. https://github.com/ravi688/NetSocket/blob/main/source/main.server_async_socket.cpp
