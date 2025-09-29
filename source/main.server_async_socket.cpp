@@ -49,7 +49,6 @@ int main()
 	clientSocket->send(reinterpret_cast<const u8*>(&dataLen), sizeof(dataLen));
 	clientSocket->send(reinterpret_cast<const u8*>(data), dataLen);
 
-	// spdlog::info("Executing finish()");
 	result = clientSocket->finish();
 	netsocket_assert(result == netsocket::Result::Success);
 	spdlog::info("Data sent successfully");
