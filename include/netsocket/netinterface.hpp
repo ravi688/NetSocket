@@ -29,4 +29,5 @@ namespace netsocket
 	};
 	NETSOCKET_API std::vector<std::pair<std::string, IPv4Address>> GetInterfaceIPv4Addresses();
 	NETSOCKET_API std::string TrySelectingPhysicalInterfaceIPAddress(const std::vector<std::pair<std::string, IPv4Address>>& ipAddresses, std::string_view prefix = "");
+	NETSOCKET_API std::string GetIPv4Address(std::string_view prefix = "");
 }

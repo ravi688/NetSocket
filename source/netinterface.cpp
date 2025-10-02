@@ -134,4 +134,11 @@ namespace netsocket
 		}
 		return (filtered.size() == 0) ? "127.0.0.1" : filtered[0].second.str();
 	}
+
+	NETSOCKET_API std::string GetIPv4Address(std::string_view prefix)
+	{
+		auto addresses = GetInterfaceIPv4Addresses();
+		std::string str= TrySelectingPhysicalInterfaceIPAddress(addresses, prefix);
+		return str;
+	}
 } 

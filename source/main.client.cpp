@@ -27,6 +27,9 @@ int main()
 
         spdlog::info("Selected IP address: {}", ipAddress);
 
+        std::string ipAddress2 = netsocket::GetIPv4Address("192.168.1.1");
+        spdlog::info("TEST: netsocket::GetIPv4Address() = {}", ipAddress2);
+
 	netsocket::Socket mySocket(netsocket::SocketType::Stream, 
 								netsocket::IPAddressFamily::IPv4,
 								netsocket::IPProtocol::TCP);
