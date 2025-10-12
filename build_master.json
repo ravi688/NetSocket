@@ -1,11 +1,20 @@
 {
     "project_name": "NetSocket",
     "canonical_name": "netsocket",
-    "dependencies" : [ "common", "spdlog", "bufferlib" ],
+    "dependencies" : [
+        "common", 
+        "spdlog",
+        "bufferlib",
+        "ixwebsocket",
+        "zlib",
+        "mbedtls",
+        "mbedx509",
+        "mbedcrypto"
+    ],
     "include_dirs": "include",
     "debug_defines" : [ "-DNETSOCKET_DEBUG" ],
     "release_defines" : [ "-DNETSOCKET_RELEASE" ],
-    "windows_link_args" : [ "-lws2_32", "-liphlpapi" ],
+    "windows_link_args" : [ "-lws2_32", "-liphlpapi", "-lcrypt32" ],
     "vars" :
     {
 	    "sources" : [
@@ -62,6 +71,13 @@
             "link_with" : [ "netsocket_static" ],
             "sources" : [
                 "source/main.client_async_socket.cpp"
+            ]
+        },
+        {
+            "name" : "test_ixwebsocket",
+            "is_executable" : true,
+            "sources" : [
+                "source/main.ixwebsocket.cpp"
             ]
         }
     ]

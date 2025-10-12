@@ -1,9 +1,21 @@
 # NetSocket
 Cross platform Networking Programming library which works on Linux and Windows both. 
 
+## Installing dependencies
+### Mingw64
+```
+git clone https://github.com/machinezone/IXWebSocket.git
+cd IXWebSocket
+cmake -S . -B build_tls -GNinja -DUSE_TLS=1 -DCMAKE_INSTALL_PREFIX=/mingw64 -DCMAKE_BUILD_TYPE=Release
+cmake --build build_tls
+cmake --install build_tls
+pacman -S mingw-w64-x86_64-zlib
+pacman -S mingw-w64-x86_64-mbedtls
+build_master_meson wrap install spdlog
+```
+
 ## Building
 ```
-build_master_meson wrap install spdlog
 build_master meson setup build
 build_master meson compile -C build
 ```
