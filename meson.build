@@ -55,6 +55,7 @@ sources = [
 'source/netsocket.cpp',
 'source/netasyncsocket.cpp',
 'source/netinterface.cpp',
+'source/websocket.cpp',
 'source/assert.cpp'
 ]
 
@@ -485,6 +486,82 @@ test_ixwebsocket = executable('test_ixwebsocket',
 	c_args: test_ixwebsocket_defines_bm_internal__ + project_build_mode_defines_bm_internal__,
 	cpp_args: test_ixwebsocket_defines_bm_internal__ + project_build_mode_defines_bm_internal__, 
 	link_args: test_ixwebsocket_link_args_bm_internal__[host_machine.system()],
+	gnu_symbol_visibility: 'hidden'
+)
+
+# -------------- Target: test_client_ixwebsocket ------------------
+test_client_ixwebsocket_sources_bm_internal__ = [
+'source/main.ixwebsocket.client.cpp'
+]
+test_client_ixwebsocket_include_dirs_bm_internal__ = [
+
+]
+test_client_ixwebsocket_dependencies_bm_internal__ = [
+
+]
+test_client_ixwebsocket_link_args_bm_internal__ = {
+'windows' : [],
+'linux' : [],
+'darwin' : []
+}
+test_client_ixwebsocket_platform_src_bm_internal__ = {
+'windows' : [],
+'linux' : [],
+'darwin' : []
+}
+test_client_ixwebsocket_defines_bm_internal__ = [
+
+]
+test_client_ixwebsocket = executable('test_client_ixwebsocket',
+	test_client_ixwebsocket_sources_bm_internal__ + test_client_ixwebsocket_platform_src_bm_internal__[host_machine.system()] + sources_bm_internal__,
+	dependencies: dependencies_bm_internal__ + test_client_ixwebsocket_dependencies_bm_internal__,
+	include_directories: [inc_bm_internal__, test_client_ixwebsocket_include_dirs_bm_internal__],
+	install: false,
+	c_args: test_client_ixwebsocket_defines_bm_internal__ + project_build_mode_defines_bm_internal__,
+	cpp_args: test_client_ixwebsocket_defines_bm_internal__ + project_build_mode_defines_bm_internal__, 
+	link_args: test_client_ixwebsocket_link_args_bm_internal__[host_machine.system()], 
+	link_with: [
+netsocket_static
+]
+,
+	gnu_symbol_visibility: 'hidden'
+)
+
+# -------------- Target: test_server_ixwebsocket ------------------
+test_server_ixwebsocket_sources_bm_internal__ = [
+'source/main.ixwebsocket.server.cpp'
+]
+test_server_ixwebsocket_include_dirs_bm_internal__ = [
+
+]
+test_server_ixwebsocket_dependencies_bm_internal__ = [
+
+]
+test_server_ixwebsocket_link_args_bm_internal__ = {
+'windows' : [],
+'linux' : [],
+'darwin' : []
+}
+test_server_ixwebsocket_platform_src_bm_internal__ = {
+'windows' : [],
+'linux' : [],
+'darwin' : []
+}
+test_server_ixwebsocket_defines_bm_internal__ = [
+
+]
+test_server_ixwebsocket = executable('test_server_ixwebsocket',
+	test_server_ixwebsocket_sources_bm_internal__ + test_server_ixwebsocket_platform_src_bm_internal__[host_machine.system()] + sources_bm_internal__,
+	dependencies: dependencies_bm_internal__ + test_server_ixwebsocket_dependencies_bm_internal__,
+	include_directories: [inc_bm_internal__, test_server_ixwebsocket_include_dirs_bm_internal__],
+	install: false,
+	c_args: test_server_ixwebsocket_defines_bm_internal__ + project_build_mode_defines_bm_internal__,
+	cpp_args: test_server_ixwebsocket_defines_bm_internal__ + project_build_mode_defines_bm_internal__, 
+	link_args: test_server_ixwebsocket_link_args_bm_internal__[host_machine.system()], 
+	link_with: [
+netsocket_static
+]
+,
 	gnu_symbol_visibility: 'hidden'
 )
 

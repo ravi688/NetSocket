@@ -37,7 +37,7 @@ int main()
 	netsocket_assert((result == netsocket::Result::Success) && "Failed to listen");
 
 	std::optional<netsocket::Socket> clientSocket = mySocket.accept();
-	netsocket_assert((result == netsocket::Result::Success) && "Failed to accept connection");
+	netsocket_assert(clientSocket.has_value() && "Failed to accept connection");
 	netsocket_assert(clientSocket->isConnected());
 
 	spdlog::info("Connection accepted");

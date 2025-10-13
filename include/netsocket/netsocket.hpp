@@ -1,6 +1,7 @@
 #pragma once
 
 #include <netsocket/defines.hpp>
+#include <netsocket/result.hpp> // for netsocket::Result enum
 #include <common/platform.h>
 #include <common/defines.hpp>
 #include <optional>
@@ -28,13 +29,6 @@ namespace netsocket
 		TCP,
 		UDP,
 		RM
-	};
-
-	enum class Result
-	{
-		Success = 0,
-		Failed,
-		SocketError
 	};
 
 	#ifdef PLATFORM_WINDOWS

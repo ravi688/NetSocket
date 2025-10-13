@@ -21,6 +21,7 @@
 		    "source/netsocket.cpp",
             "source/netasyncsocket.cpp",
 		    "source/netinterface.cpp",
+            "source/websocket.cpp",
 		    "source/assert.cpp"
 	    ]
     },
@@ -78,6 +79,22 @@
             "is_executable" : true,
             "sources" : [
                 "source/main.ixwebsocket.cpp"
+            ]
+        },
+        {
+            "name" : "test_client_ixwebsocket",
+            "is_executable" : true,
+            "link_with" : [ "netsocket_static" ],
+            "sources" : [
+                "source/main.ixwebsocket.client.cpp"
+            ]
+        },
+        {
+            "name" : "test_server_ixwebsocket",
+            "is_executable" : true,
+            "link_with" : [ "netsocket_static" ],
+            "sources" : [
+                "source/main.ixwebsocket.server.cpp"
             ]
         }
     ]
