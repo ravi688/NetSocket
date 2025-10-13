@@ -26,6 +26,7 @@ namespace netsocket
 		std::unique_ptr<WebSocket> m_acceptedSocket;
 		
 		std::atomic<bool> m_isConnected;
+		bool m_isError;
 
 		std::mutex m_receiveMutex;
 		std::condition_variable m_receiveCV;
@@ -45,7 +46,7 @@ namespace netsocket
 		}
 
 		void postMessageInReceiveBuffer(const u8* const data, const u32 size);
-		void processMessage(const ix::WebSocketMessagePtr& msg, bool* isError = nullptr);
+		void processMessage(const ix::WebSocketMessagePtr& msg);
 
 	public:
 		WebSocket();

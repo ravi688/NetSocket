@@ -17,6 +17,7 @@ namespace netsocket
 	WebSocket::WebSocket() : m_serverSocket(nullptr, NoDeleter<ix::WebSocketServer>),
 							m_clientSocket(nullptr, NoDeleter<ix::WebSocket>),
 							m_isConnected(false),
+							m_isError(false),
 							m_hasReceiveData(false)
 							
 	{
@@ -106,17 +107,15 @@ namespace netsocket
     	std::string url(std::format("ws://{}:{}", ipAddress, port));
     	m_clientSocket->setUrl(url);
 
-    	bool isError = false;
-
-    	m_clientSocket->setOnMessageCallback([&isError, this](const ix::WebSocketMessagePtr& msg)
+    	m_clientSocket->setOnMessageCallback([this](const ix::WebSocketMessagePtr& msg)
     	{
-    		this->processMessage(msg, &isError);
+    		this->processMessage(msg);
     	});
 
     	m_clientSocket->start();
     	std::unique_lock<std::mutex> lock(m_receiveMutex);
-    	m_receiveCV.wait(lock, [&isError, this] { return this->m_isConnected || isError; });
-    	if(isError)
+    	m_receiveCV.wait(lock, [this] { return this->m_isConnected || this->m_isError; });
+    	if(this->m_isError)
     	{
     		close();
     		return Result::Failed;
@@ -196,17 +195,16 @@ namespace netsocket
 		m_receiveCV.wait(lock, [this] { return !m_hasReceiveData; });
 		m_receiveBuffer.resize(size);
 		std::memcpy(m_receiveBuffer.data(), data, size);
+		m_hasReceiveData = true;
 		m_receiveCV.notify_one();
 	}
 
-	void WebSocket::processMessage(const ix::WebSocketMessagePtr& msg, bool* isError)
+	void WebSocket::processMessage(const ix::WebSocketMessagePtr& msg)
 	{
 		if (msg->type == ix::WebSocketMessageType::Message)
 		{
 			const auto& str = msg->str;
-			std::cout << "Message Received: " << str << std::endl;
 			postMessageInReceiveBuffer(reinterpret_cast<const u8*>(str.data()), str.size());
-			std::cout << "Message Posted" << std::endl;
 		}
 		else if (msg->type == ix::WebSocketMessageType::Open
 				|| msg->type == ix::WebSocketMessageType::Error
@@ -217,8 +215,8 @@ namespace netsocket
 		    	m_isConnected = true;
 			if(msg->type == ix::WebSocketMessageType::Error || msg->type == ix::WebSocketMessageType::Close)
 			{
-				if(isError)
-					*isError = true;
+				if(msg->type == ix::WebSocketMessageType::Error)
+					m_isError = true;
 		    	m_isConnected = false;
 			}
 			m_receiveCV.notify_one();

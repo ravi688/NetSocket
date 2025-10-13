@@ -27,6 +27,7 @@ int main()
     constexpr char* refData = "Hello World";
     constexpr u32 refDataLen = std::strlen(refData);
     char receiveBuffer[refDataLen];
+    std::this_thread::sleep_for(std::chrono::seconds(2));
     result = mySocket.receive(reinterpret_cast<u8*>(receiveBuffer), refDataLen);
     netsocket_assert(result == netsocket::Result::Success);
     bool isEqual = std::memcmp(receiveBuffer, refData, refDataLen) == 0;
