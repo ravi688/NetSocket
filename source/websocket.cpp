@@ -129,6 +129,7 @@ namespace netsocket
 	{
 		if(m_clientSocket)
 		{
+			m_clientSocket->close();
 			m_clientSocket->stop();
 			m_clientSocket.reset();
 		}
