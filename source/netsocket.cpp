@@ -187,11 +187,17 @@ namespace netsocket
 
 #ifdef PLATFORM_WINDOWS
 		BOOL opt = TRUE;
-		setsockopt(m_socket, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char*>(&opt), sizeof(opt));
+		result = setsockopt(m_socket, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char*>(&opt), sizeof(opt));
 #else // PLATFORM_LINUX
 		int opt = 1;
-		setsockopt(m_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+		result = setsockopt(m_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 #endif
+		if(result < 0)
+		{
+			freeaddrinfo(addressInfo);
+			m_isValid = false;
+			return Result::SocketError;
+		}
 
 		result = ::bind(m_socket, addressInfo->ai_addr, (int)addressInfo->ai_addrlen);
 
