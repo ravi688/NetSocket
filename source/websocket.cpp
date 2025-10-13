@@ -136,7 +136,8 @@ namespace netsocket
 		else if(m_serverSocket)
 		{
 			m_serverSocket->stop();
-			m_serverSocket->wait();
+			// Calling wait() blocks the calling thread forever, I checked the implementation of wait(), it just waits for nothing.
+			// m_serverSocket->wait();
 			m_serverSocket.reset();
 		}
 
