@@ -18,7 +18,7 @@ build_master_meson wrap install spdlog
 ```
 ### Build and install IXWebSocket
 ```
-git clone https://github.com/machinezone/IXWebSocket.git
+git clone https://github.com/ravi688/IXWebSocket.git
 cd IXWebSocket
 cmake -S . -B build_tls -GNinja -DUSE_TLS=1 -DCMAKE_INSTALL_PREFIX=/mingw64 -DCMAKE_BUILD_TYPE=Release
 cmake --build build_tls
