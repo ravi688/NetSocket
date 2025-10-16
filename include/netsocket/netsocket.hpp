@@ -105,5 +105,59 @@ namespace netsocket
 		Result receive(u8* bytes, u32 size);
 
 		void setOnDisconnect(void (*onDisconnect)(Socket& socket, void* userData), void* userData);
+
+
+		template<typename T>
+		bool sendNonEnum(const T& value)
+		{
+			return send(reinterpret_cast<const u8*>(&value), sizeof(value)) == Result::Success;
+		}
+
+		template<typename EnumClassType>
+		bool sendEnum(const EnumClassType& value)
+		{
+			auto intValue = com::EnumClassToInt<EnumClassType>(value);
+			return send<decltype(intValue)>(intValue);
+		}
+
+		template<typename T>
+		bool send(const T& value)
+		{
+			if constexpr (std::is_enum<T>::value)
+				return sendEnum<T>(value);
+			else
+				return sendNonEnum<T>(value);
+		}
+
+		template<typename T>
+		std::optional<T> receiveNonEnum()
+		{
+			T value;
+			auto result = receive(reinterpret_cast<u8*>(&value), sizeof(value));
+			if(result == Result::Success)
+				return { value };
+			else
+				return { };
+		}
+
+		template<typename EnumClassType>
+		std::optional<EnumClassType> receiveEnum()
+		{
+			using IntType = typename std::underlying_type<EnumClassType>::type;
+			auto intValue = receive<IntType>();
+			if(intValue)
+				return { com::IntToEnumClass<EnumClassType>(*intValue) };
+			else
+				return { };
+		}
+
+		template<typename T>
+		std::optional<T> receive()
+		{
+			if constexpr (std::is_enum<T>::value)
+				return receiveEnum<T>();
+			else
+				return receiveNonEnum<T>();
+		}
 	};
 }
