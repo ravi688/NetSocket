@@ -85,9 +85,7 @@ namespace netsocket
 																						m_socketType(GetWin32SocketType(socketType)), 
 																						m_ipProtocol(GetWin32IPProtocol(ipProtocol)),
 																						m_isConnected(false),
-																						m_isValid(false),
-																						m_onDisconnect(NULL),
-																						m_userData(NULL)
+																						m_isValid(false)
 	{
 		m_socket = socket(m_ipaFamily, m_socketType, m_ipProtocol);
 
@@ -110,8 +108,7 @@ namespace netsocket
 									m_ipProtocol(socket.m_ipProtocol),
 									m_isConnected(socket.m_isConnected),
 									m_isValid(socket.m_isValid),
-									m_onDisconnect(socket.m_onDisconnect),
-									m_userData(socket.m_userData)
+									m_onDisconnectCallback(std::move(socket.m_onDisconnectCallback))
 	{
 		socket.m_socket = NETSOCKET_INVALID_SOCKET_HANDLE;
 		socket.m_ipaFamily = 0;
@@ -119,8 +116,6 @@ namespace netsocket
 		socket.m_ipProtocol = 0;
 		socket.m_isConnected = false;
 		socket.m_isValid = false;
-		socket.m_onDisconnect = NULL;
-		socket.m_userData = NULL;
 	}
 
 	Socket& Socket::operator=(Socket&& socket)
@@ -131,6 +126,7 @@ namespace netsocket
 		m_ipProtocol = socket.m_ipProtocol;
 		m_isConnected = socket.m_isConnected;
 		m_isValid = socket.m_isValid;
+		m_onDisconnectCallback = std::move(socket.m_onDisconnectCallback);
 
 		socket.m_socket = NETSOCKET_INVALID_SOCKET_HANDLE;
 		socket.m_ipaFamily = 0;
@@ -138,8 +134,6 @@ namespace netsocket
 		socket.m_ipProtocol = 0;
 		socket.m_isConnected = false;
 		socket.m_isValid = false;
-		socket.m_onDisconnect = NULL;
-		socket.m_userData = NULL;
 
 		return *this;
 	}
@@ -309,14 +303,12 @@ namespace netsocket
 
 	void Socket::callOnDisconnect()
 	{
-		if(m_onDisconnect == NULL)
-			return;
-		m_onDisconnect(*this, m_userData);
+		if(m_onDisconnectCallback)
+			m_onDisconnectCallback(*this);
 	}
 
-	void Socket::setOnDisconnect(void (*onDisconnect)(Socket& socket, void* userData), void* userData)
+	void Socket::setOnDisconnect(const OnDisconnectCallback& callback)
 	{
-		m_onDisconnect = onDisconnect;
-		m_userData = userData;
+		m_onDisconnectCallback = callback;
 	}
 }

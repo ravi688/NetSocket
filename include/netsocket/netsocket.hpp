@@ -5,6 +5,7 @@
 #include <common/platform.h>
 #include <common/defines.hpp>
 #include <optional>
+#include <functional>
 
 #ifdef PLATFORM_WINDOWS
 #	include <winsock2.h>
@@ -41,6 +42,7 @@ namespace netsocket
 
 	class NETSOCKET_API Socket
 	{
+		using OnDisconnectCallback = std::function<void(Socket&)>;
 	private:
 		SocketHandle m_socket;
 		int m_ipaFamily;
@@ -49,10 +51,9 @@ namespace netsocket
 		bool m_isConnected;
 		bool m_isValid;
 
-		void (*m_onDisconnect)(Socket& socket, void* userData);
-		void* m_userData;
+		OnDisconnectCallback m_onDisconnectCallback;
 
-		Socket() : m_socket(NETSOCKET_INVALID_SOCKET_HANDLE), m_onDisconnect(NULL), m_userData(NULL) { }
+		Socket() : m_socket(NETSOCKET_INVALID_SOCKET_HANDLE) { }
 
 		static Socket CreateAcceptedSocket(SocketHandle socket, int socketType, int ipAddressFamily, int ipProtocol)
 		{
@@ -104,7 +105,11 @@ namespace netsocket
 		Result send(const u8* bytes, u32 size);
 		Result receive(u8* bytes, u32 size);
 
-		void setOnDisconnect(void (*onDisconnect)(Socket& socket, void* userData), void* userData);
+		void setOnDisconnect(const OnDisconnectCallback& callback);
+		void setOnDisconnect(void (*onDisconnect)(Socket& socket, void* userData), void* userData)
+		{
+			setOnDisconnect([userData, onDisconnect](Socket& socket) { onDisconnect(socket, userData); });
+		}
 
 
 		template<typename T>
