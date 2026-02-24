@@ -32,14 +32,14 @@ namespace netsocket
 	{
 		static WSADATA gWSAData;
 		if(WSAStartup(MAKEWORD(2, 2), &gWSAData) != 0)
-			debug_log_fetal_error("WSAStartup failed");
-		debug_log_info("Initialized Windows Socket : Success");
+			com_debug_log_fetal_error("WSAStartup failed");
+		com_debug_log_info("Initialized Windows Socket : Success");
 	}
 
 	DESTRUCTOR_FUNCTION void DeinitializeWSA()
 	{
 		WSACleanup();
-		debug_log_info("Windows Socket uninitialized");
+		com_debug_log_info("Windows Socket uninitialized");
 	}
 	#endif // PLATFORM_WINDOWS
 
@@ -50,7 +50,7 @@ namespace netsocket
 			case IPAddressFamily::IPv4: return AF_INET;
 			case IPAddressFamily::IPv6: return AF_INET6;
 			default:
-				debug_log_fetal_error("IPAddressFamily %lu is not supported as of now", ipaFamily);
+				com_debug_log_fetal_error("IPAddressFamily %lu is not supported as of now", ipaFamily);
 		}
 		return 0;
 	}
@@ -62,7 +62,7 @@ namespace netsocket
 			case SocketType::Stream: return SOCK_STREAM;
 			case SocketType::Raw: return SOCK_RAW;
 			default:
-				debug_log_fetal_error("SocketType %lu is not supported as of now", socketType);
+				com_debug_log_fetal_error("SocketType %lu is not supported as of now", socketType);
 		}
 		return 0;
 	}
@@ -75,7 +75,7 @@ namespace netsocket
 			case IPProtocol::UDP: return IPPROTO_UDP;
 			// case IPProtocol::RM: return IPPROTO_RM;
 			default:
-				debug_log_fetal_error("IPProtocol %lu is not supported as of now", ipProtocol);
+				com_debug_log_fetal_error("IPProtocol %lu is not supported as of now", ipProtocol);
 		}
 		return 0;
 	}
@@ -92,9 +92,9 @@ namespace netsocket
 		if(m_socket == NETSOCKET_INVALID_SOCKET_HANDLE)
 		{
 #ifdef PLATFORM_WINDOWS
-			debug_log_fetal_error("Unable to create socket, error code: %d", WSAGetLastError());
+			com_debug_log_fetal_error("Unable to create socket, error code: %d", WSAGetLastError());
 #else // PLATFORM_LINUX
-      			debug_log_fetal_error("Unable to create socket, error: %s", strerror(errno));
+      			com_debug_log_fetal_error("Unable to create socket, error: %s", strerror(errno));
 #endif
 		}
 
