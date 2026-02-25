@@ -9,6 +9,16 @@
 
 #include <iostream>
 
+static CONSTRUCTOR_FUNCTION void InitializeWebSocket()
+{
+	ix::initNetSystem();
+}
+
+static DESTRUCTOR_FUNCTION void DeinitializeWebSocket()
+{
+	ix::uninitNetSystem();
+}
+
 namespace netsocket
 {
 	template<typename T>
@@ -44,12 +54,7 @@ namespace netsocket
 	std::unique_ptr<WebSocket> WebSocket::accept()
 	{
 		netsocket_assert(m_serverSocket && "WebSocket is not usable as server");
-		std::unique_lock<std::mutex> lock(this->m_receiveMutex);
-		m_receiveCV.wait(lock, [this] { return m_acceptedSocket.get() != nullptr; });
-		auto acceptedSocket = std::move(m_acceptedSocket);
-		netsocket_debug_assert(m_acceptedSocket.get() == nullptr);
-		m_receiveCV.notify_one();
-		return acceptedSocket;
+		return m_acceptedSockets->pop();
 	}
 
 	Result WebSocket::bind(const std::string_view ipAddress, const std::string_view portNumber)
@@ -66,11 +71,8 @@ namespace netsocket
     		{
     		    std::cout << "New connection" << std::endl;
 
-    		    std::unique_lock<std::mutex> lock(this->m_receiveMutex);
-    		    this->m_receiveCV.wait(lock, [this] { return m_acceptedSocket.get() == nullptr; });
-    		    m_acceptedSocket = CreateAcceptedSocket(webSocket);
-    		    lock.unlock();
-    		    this->m_receiveCV.notify_one();
+    		    auto acceptedSocket = CreateAcceptedSocket(webSocket);
+    		    m_acceptedSockets->push(std::move(acceptedSocket));
 
         		// A connection state object is available, and has a default id
         		// You can subclass ConnectionState and pass an alternate factory
@@ -87,17 +89,9 @@ namespace netsocket
         		    std::cout << "\t" << it.first << ": " << it.second << std::endl;
         		}
     		}
-    		else if (msg->type == ix::WebSocketMessageType::Message)
-    		{
-    		    // For an echo server, we just send back to the client whatever was received by the server
-    		    // All connected clients are available in an std::set. See the broadcast cpp example.
-    		    // Second parameter tells whether we are sending the message in binary or text mode.
-    		    // Here we send it in the same mode as it was received.
-    		    std::cout << "Received: " << msg->str << std::endl;
-		
-    		    webSocket.send(msg->str, msg->binary);
-    		}
 		});
+
+		m_acceptedSockets = std::make_unique<com::ProducerConsumerBuffer<std::unique_ptr<WebSocket>>>();
 
 		return Result::Success;
 	}
@@ -171,6 +165,7 @@ namespace netsocket
 			return Result::Failed;
 		}
 		std::memcpy(bytes, m_receiveBuffer.data(), size);
+		m_hasReceiveData = false;
 		m_receiveCV.notify_one();
 		return Result::Success;
 	}

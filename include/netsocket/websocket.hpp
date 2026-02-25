@@ -1,6 +1,7 @@
 #pragma once
 
 #include <common/defines.h>
+#include <common/ProducerConsumerBuffer.hpp> // thread safe producer consumer buffer
 
 #include <netsocket/defines.hpp>
 #include <netsocket/result.hpp>
@@ -23,7 +24,7 @@ namespace netsocket
 	private:
 		UniquePtr<ix::WebSocketServer> m_serverSocket;
 		UniquePtr<ix::WebSocket> m_clientSocket;
-		std::unique_ptr<WebSocket> m_acceptedSocket;
+		std::unique_ptr<com::ProducerConsumerBuffer<std::unique_ptr<WebSocket>>> m_acceptedSockets;
 		
 		std::atomic<bool> m_isConnected;
 		bool m_isError;
