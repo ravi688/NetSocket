@@ -75,12 +75,19 @@
             ]
         },
         {
-            "name" : "test_ixwebsocket",
+            "name" : "test_ixwebsocket_machinezone_server",
             "is_executable" : true,
             "sources" : [
-                "source/main.ixwebsocket.cpp"
+                "source/main.ixwebsocket_machinezone_server.cpp"
             ]
         },
+	{
+		"name" : "test_ixwebsocket_machinezone_client",
+		"is_executable" : true,
+		"sources" : [
+			"source/main.ixwebsocket_machinezone_client.cpp"
+		]
+	},
         {
             "name" : "test_client_ixwebsocket",
             "is_executable" : true,

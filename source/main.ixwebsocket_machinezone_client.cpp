@@ -29,7 +29,7 @@ int main()
     // Connect to a server with encryption
     // See https://machinezone.github.io/IXWebSocket/usage/#tls-support-and-configuration
     //     https://github.com/machinezone/IXWebSocket/issues/386#issuecomment-1105235227 (self signed certificates)
-    std::string url("wss://echo.websocket.org");
+    std::string url("ws://127.0.0.1:8008");
     webSocket.setUrl(url);
 
     std::cout << "Connecting to " << url << "..." << std::endl;
@@ -71,6 +71,8 @@ int main()
     // Exit with Ctrl-D on Unix or Ctrl-Z on Windows.
     while (std::getline(std::cin, text))
     {
+	if(text == "exit")
+		break;
         webSocket.send(text);
         std::cout << "> " << std::flush;
     }
