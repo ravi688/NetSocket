@@ -28,7 +28,8 @@ namespace netsocket
 							m_clientSocket(nullptr, NoDeleter<ix::WebSocket>),
 							m_isConnected(false),
 							m_isError(false),
-							m_hasReceiveData(false)
+							m_hasReceiveData(false),
+							m_isServerOwnedClient(false)
 							
 	{
 	}
@@ -122,8 +123,9 @@ namespace netsocket
 	{
 		if(m_clientSocket)
 		{
-			m_clientSocket->close();
+			// stop() calls close() in itself, so no need to call explicitly
 			m_clientSocket->stop();
+			m_isServerOwnedClient = false;
 			m_clientSocket.reset();
 		}
 		else if(m_serverSocket)
@@ -175,6 +177,7 @@ namespace netsocket
 		std::unique_ptr<WebSocket> webSocket = std::make_unique<WebSocket>();
 
 		webSocket->m_isConnected = true;
+		webSocket->m_isServerOwnedClient = true;
 		auto webSocketPtr = UniquePtr<ix::WebSocket>(&ixWebSocket, NoDeleter<ix::WebSocket>);
     	webSocketPtr->setOnMessageCallback([rawPtr = webSocket.get()](const ix::WebSocketMessagePtr& msg)
     	{

@@ -34,6 +34,9 @@ namespace netsocket
 		bool m_hasReceiveData;
 		std::vector<u8> m_receiveBuffer;
 
+		// True if this socket is a client socket and on the server machine
+		bool m_isServerOwnedClient;
+
 		static std::unique_ptr<WebSocket> CreateAcceptedSocket(ix::WebSocket& webSocket);
 
 		template<typename T>
