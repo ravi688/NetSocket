@@ -30,9 +30,8 @@ int main()
     std::string host("127.0.0.1"); // If you need this server to be accessible on a different machine, use "0.0.0.0"
     ix::WebSocketServer server(port, host);
     
-    std::mutex gWebSocketPtrMutex;
-    ix::WebSocket* webSocketPtr = nullptr;
-    server.setOnClientMessageCallback([&webSocketPtr, &gWebSocketPtrMutex](std::shared_ptr<ix::ConnectionState> connectionState, ix::WebSocket & webSocket, const ix::WebSocketMessagePtr & msg) {
+    std::atomic<ix::WebSocket*> webSocketPtr = nullptr;
+    server.setOnClientMessageCallback([&webSocketPtr](std::shared_ptr<ix::ConnectionState> connectionState, ix::WebSocket & webSocket, const ix::WebSocketMessagePtr & msg) {
         // The ConnectionState object contains information about the connection,
         // at this point only the client ip address and the port.
         std::cout << "Remote ip: " << connectionState->getRemoteIp() << std::endl;
@@ -55,13 +54,11 @@ int main()
             {
                 std::cout << "\t" << it.first << ": " << it.second << std::endl;
             }
-	       std::lock_guard<std::mutex> lock(gWebSocketPtrMutex);
 	       webSocketPtr = &webSocket;
         }
         else if(msg->type == ix::WebSocketMessageType::Close)
         {
     	   std::cout << "close message is received\n";
-           std::lock_guard<std::mutex> lock(gWebSocketPtrMutex);
 	       webSocketPtr = nullptr;
         }
         else if (msg->type == ix::WebSocketMessageType::Message)
@@ -93,11 +90,8 @@ int main()
     spdlog::info("Press any key to stop the server");
     (void)(std::cin.get());
 
-    {
-	    std::lock_guard<std::mutex> lock(gWebSocketPtrMutex);
-	    if(webSocketPtr)
-	    	webSocketPtr->close(ix::WebSocketCloseConstants::kNormalClosureCode);
-    }
+	if(webSocketPtr)
+	   	webSocketPtr.load()->close(ix::WebSocketCloseConstants::kNormalClosureCode);
 
     std::this_thread::sleep_for(std::chrono::duration<float, std::ratio<1, 1>>(10));
     server.stop();
