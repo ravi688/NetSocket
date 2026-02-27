@@ -9,6 +9,16 @@
 
 #include <iostream>
 
+static CONSTRUCTOR_FUNCTION void InitializeWebSocket()
+{
+	ix::initNetSystem();
+}
+
+static DESTRUCTOR_FUNCTION void DeinitializeWebSocket()
+{
+	ix::uninitNetSystem();
+}
+
 namespace netsocket
 {
 	template<typename T>
@@ -18,7 +28,8 @@ namespace netsocket
 							m_clientSocket(nullptr, NoDeleter<ix::WebSocket>),
 							m_isConnected(false),
 							m_isError(false),
-							m_hasReceiveData(false)
+							m_hasReceiveData(false),
+							m_isServerOwnedClient(false)
 							
 	{
 	}
@@ -44,12 +55,7 @@ namespace netsocket
 	std::unique_ptr<WebSocket> WebSocket::accept()
 	{
 		netsocket_assert(m_serverSocket && "WebSocket is not usable as server");
-		std::unique_lock<std::mutex> lock(this->m_receiveMutex);
-		m_receiveCV.wait(lock, [this] { return m_acceptedSocket.get() != nullptr; });
-		auto acceptedSocket = std::move(m_acceptedSocket);
-		netsocket_debug_assert(m_acceptedSocket.get() == nullptr);
-		m_receiveCV.notify_one();
-		return acceptedSocket;
+		return m_acceptedSockets->pop();
 	}
 
 	Result WebSocket::bind(const std::string_view ipAddress, const std::string_view portNumber)
@@ -66,11 +72,8 @@ namespace netsocket
     		{
     		    std::cout << "New connection" << std::endl;
 
-    		    std::unique_lock<std::mutex> lock(this->m_receiveMutex);
-    		    this->m_receiveCV.wait(lock, [this] { return m_acceptedSocket.get() == nullptr; });
-    		    m_acceptedSocket = CreateAcceptedSocket(webSocket);
-    		    lock.unlock();
-    		    this->m_receiveCV.notify_one();
+    		    auto acceptedSocket = CreateAcceptedSocket(webSocket);
+    		    m_acceptedSockets->push(std::move(acceptedSocket));
 
         		// A connection state object is available, and has a default id
         		// You can subclass ConnectionState and pass an alternate factory
@@ -87,17 +90,9 @@ namespace netsocket
         		    std::cout << "\t" << it.first << ": " << it.second << std::endl;
         		}
     		}
-    		else if (msg->type == ix::WebSocketMessageType::Message)
-    		{
-    		    // For an echo server, we just send back to the client whatever was received by the server
-    		    // All connected clients are available in an std::set. See the broadcast cpp example.
-    		    // Second parameter tells whether we are sending the message in binary or text mode.
-    		    // Here we send it in the same mode as it was received.
-    		    std::cout << "Received: " << msg->str << std::endl;
-		
-    		    webSocket.send(msg->str, msg->binary);
-    		}
 		});
+
+		m_acceptedSockets = std::make_unique<com::ProducerConsumerBuffer<std::unique_ptr<WebSocket>>>();
 
 		return Result::Success;
 	}
@@ -128,13 +123,27 @@ namespace netsocket
 	{
 		if(m_clientSocket)
 		{
-			m_clientSocket->close();
-			m_clientSocket->stop();
+			std::unique_lock<std::mutex> lock(m_receiveMutex);
+			// It is possible that the remote client has closed the connection
+			// And the server thread destroyes the websocket instance associated the remote client connection
+			// So, check whether the 
+			if(!m_isConnected)
+			{
+				if(m_clientSocket)
+					m_clientSocket.reset();
+				return Result::Success;
+			}
+			m_clientSocket->close();			
+			// Wait for the socket to be disconnected completely
+			m_receiveCV.wait(lock, [this] { return !this->m_isConnected; });
+
+			m_isServerOwnedClient = false;
 			m_clientSocket.reset();
 		}
 		else if(m_serverSocket)
 		{
-			m_serverSocket->stop();
+			// NOTE: call to stop() over ix::WebSocketServer is not idempotent, it will fire redundant socket closure error if stop() is followed by destructor
+			// m_serverSocket->stop();
 			// Calling wait() blocks the calling thread forever, I checked the implementation of wait(), it just waits for nothing.
 			// m_serverSocket->wait();
 			m_serverSocket.reset();
@@ -171,6 +180,7 @@ namespace netsocket
 			return Result::Failed;
 		}
 		std::memcpy(bytes, m_receiveBuffer.data(), size);
+		m_hasReceiveData = false;
 		m_receiveCV.notify_one();
 		return Result::Success;
 	}
@@ -180,6 +190,7 @@ namespace netsocket
 		std::unique_ptr<WebSocket> webSocket = std::make_unique<WebSocket>();
 
 		webSocket->m_isConnected = true;
+		webSocket->m_isServerOwnedClient = true;
 		auto webSocketPtr = UniquePtr<ix::WebSocket>(&ixWebSocket, NoDeleter<ix::WebSocket>);
     	webSocketPtr->setOnMessageCallback([rawPtr = webSocket.get()](const ix::WebSocketMessagePtr& msg)
     	{
@@ -206,20 +217,25 @@ namespace netsocket
 			const auto& str = msg->str;
 			postMessageInReceiveBuffer(reinterpret_cast<const u8*>(str.data()), str.size());
 		}
-		else if (msg->type == ix::WebSocketMessageType::Open
-				|| msg->type == ix::WebSocketMessageType::Error
-				|| msg->type == ix::WebSocketMessageType::Close)
+		else if (msg->type == ix::WebSocketMessageType::Open)
 		{
-			std::lock_guard<std::mutex> lock(m_receiveMutex);
-			if(msg->type == ix::WebSocketMessageType::Open)
-		    	m_isConnected = true;
-			if(msg->type == ix::WebSocketMessageType::Error || msg->type == ix::WebSocketMessageType::Close)
-			{
-				if(msg->type == ix::WebSocketMessageType::Error)
-					m_isError = true;
-		    	m_isConnected = false;
-			}
+		    m_isConnected = true;
+		    m_receiveCV.notify_one();			
+		}
+		else if (msg->type == ix::WebSocketMessageType::Error)
+		{
+			m_isError = true;
 			m_receiveCV.notify_one();
+		}
+		else if (msg->type == ix::WebSocketMessageType::Close)
+		{
+			// NOTE: Race condition:
+			// Given that close() has been called (from destructor) and waiting over m_isConnected to become false,
+			// It is possible that m_receiveCV would be destroyed as soon as m_isConnected is set to false and m_receiveCV.notify_one() would become garbage.
+			// So, it is important here to keep the mutex locked until notify_one is called and then let the close() proceed further.
+			std::lock_guard<std::mutex> lock(m_receiveMutex);
+		    m_isConnected = false;
+		    m_receiveCV.notify_one();
 		}
 	}
 }

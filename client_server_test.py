@@ -96,6 +96,7 @@ def main():
 
     test(build_dir, "test_server", "test_client")
     test(build_dir, "test_server_async_socket", "test_client_async_socket")
+    test(build_dir, "test_server_ixwebsocket", "test_client_ixwebsocket")
 
 if __name__ == "__main__":
     main()

@@ -29,10 +29,11 @@ int main()
     // Connect to a server with encryption
     // See https://machinezone.github.io/IXWebSocket/usage/#tls-support-and-configuration
     //     https://github.com/machinezone/IXWebSocket/issues/386#issuecomment-1105235227 (self signed certificates)
-    std::string url("wss://echo.websocket.org");
+    std::string url("ws://127.0.0.1:8008");
     webSocket.setUrl(url);
 
     std::cout << "Connecting to " << url << "..." << std::endl;
+    webSocket.disableAutomaticReconnection(); // Disable auto-reconnect
 
     // Setup a callback to be fired (in a background thread, watch out for race conditions !)
     // when a message or an event (open, close, error) is received
@@ -48,6 +49,10 @@ int main()
                 std::cout << "Connection established" << std::endl;
                 std::cout << "> " << std::flush;
             }
+	    else if (msg->type == ix::WebSocketMessageType::Close)
+	    {
+	    	std::cout << "Connection closed" << std::endl;
+	    }
             else if (msg->type == ix::WebSocketMessageType::Error)
             {
                 // Maybe SSL is not configured properly
@@ -71,6 +76,8 @@ int main()
     // Exit with Ctrl-D on Unix or Ctrl-Z on Windows.
     while (std::getline(std::cin, text))
     {
+	if(text == "exit")
+		break;
         webSocket.send(text);
         std::cout << "> " << std::flush;
     }

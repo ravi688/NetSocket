@@ -75,10 +75,17 @@
             ]
         },
         {
-            "name" : "test_ixwebsocket",
+            "name" : "test_ixwebsocket_machinezone_server",
             "is_executable" : true,
             "sources" : [
-                "source/main.ixwebsocket.cpp"
+                "source/main.ixwebsocket_machinezone_server.cpp"
+            ]
+        },
+        {
+            "name" : "test_ixwebsocket_machinezone_client",
+            "is_executable" : true,
+            "sources" : [
+                "source/main.ixwebsocket_machinezone_client.cpp"
             ]
         },
         {
@@ -95,6 +102,22 @@
             "link_with" : [ "netsocket_static" ],
             "sources" : [
                 "source/main.ixwebsocket.server.cpp"
+            ]
+        },
+        {
+            "name" : "test_client_ixwebsocket_multithreads",
+            "is_executable" : true,
+            "link_with" : [ "netsocket_static" ],
+            "sources" : [
+                "source/main.ixwebsocket.multi-threads.client.cpp"
+            ]
+        },
+        {
+            "name" : "test_server_ixwebsocket_multithreads",
+            "is_executable" : true,
+            "link_with" : [ "netsocket_static" ],
+            "sources" : [
+                "source/main.ixwebsocket.multi-threads.server.cpp"
             ]
         }
     ]
