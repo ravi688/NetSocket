@@ -223,6 +223,11 @@ namespace netsocket
 		}
 		else if (msg->type == ix::WebSocketMessageType::Close)
 		{
+			// NOTE: Race condition:
+			// Given that close() has been called (from destructor) and waiting over m_isConnected to become false,
+			// It is possible that m_receiveCV would be destroyed as soon as m_isConnected is set to false and m_receiveCV.notify_one() would become garbage.
+			// So, it is important here to keep the mutex locked until notify_one is called and then let the close() proceed further.
+			std::lock_guard<std::mutex> lock(m_receiveMutex);
 		    m_isConnected = false;
 		    m_receiveCV.notify_one();
 		}
