@@ -59,8 +59,8 @@ int main()
     netsocket_assert(result == netsocket::Result::Success);
     spdlog::info("Connection closed successfully");
 
-    std::this_thread::sleep_for(std::chrono::duration<float, std::ratio<1, 1>>(5));
     spdlog::info("Stopping the server in 5 seconds");
+    std::this_thread::sleep_for(std::chrono::duration<float, std::ratio<1, 1>>(5));
 
     return 0;
 }

@@ -123,13 +123,19 @@ namespace netsocket
 	{
 		if(m_clientSocket)
 		{
-			m_clientSocket->close();
-			
-			// Wait for the socket to be disconnected completely
+			std::unique_lock<std::mutex> lock(m_receiveMutex);
+			// It is possible that the remote client has closed the connection
+			// And the server thread destroyes the websocket instance associated the remote client connection
+			// So, check whether the 
+			if(!m_isConnected)
 			{
-				std::unique_lock<std::mutex> lock(m_receiveMutex);
-				m_receiveCV.wait(lock, [this] { return !this->m_isConnected; });
+				if(m_clientSocket)
+					m_clientSocket.reset();
+				return Result::Success;
 			}
+			m_clientSocket->close();			
+			// Wait for the socket to be disconnected completely
+			m_receiveCV.wait(lock, [this] { return !this->m_isConnected; });
 
 			m_isServerOwnedClient = false;
 			m_clientSocket.reset();
