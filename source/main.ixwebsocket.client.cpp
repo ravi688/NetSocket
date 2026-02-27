@@ -52,6 +52,9 @@ int main()
         netsocket_assert(result == netsocket::Result::Success);
         bool isEqual = std::memcmp(receiveBuffer, refData, refDataLen) == 0;
         netsocket_assert(isEqual);
+        std::optional<u32> value = mySocket.receive<u32>();
+        netsocket_assert(value.has_value());
+        netsocket_assert(*value == static_cast<u32>(i));
         spdlog::info("Received data is correct {}", i);
     }
 

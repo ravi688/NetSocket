@@ -51,6 +51,8 @@ int main()
         const char* data = "Hello World";
         result = clientSocket->send(reinterpret_cast<const u8*>(data), std::strlen(data));
         netsocket_assert(result == netsocket::Result::Success);
+        bool isSuccess = clientSocket->send<u32>(static_cast<u32>(i));
+        netsocket_assert(isSuccess);
     }
 
     spdlog::info("Closing client socket in 9 seconds");
