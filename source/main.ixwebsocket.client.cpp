@@ -38,7 +38,10 @@ int main()
 
     spdlog::info("Connection successful");
 
-    for(int i = 0; i < 50; ++i)
+    spdlog::info("Starting to receive in 5 seconds");
+    std::this_thread::sleep_for(std::chrono::duration<float, std::ratio<1, 1>>(5));
+
+    for(int i = 0; i < 1000; ++i)
     {
         spdlog::info("Receiving Data...");
 
@@ -49,7 +52,7 @@ int main()
         netsocket_assert(result == netsocket::Result::Success);
         bool isEqual = std::memcmp(receiveBuffer, refData, refDataLen) == 0;
         netsocket_assert(isEqual);
-        spdlog::info("Received data is correct");
+        spdlog::info("Received data is correct {}", i);
     }
 
     // result = mySocket.close();
