@@ -33,6 +33,7 @@ int main()
     webSocket.setUrl(url);
 
     std::cout << "Connecting to " << url << "..." << std::endl;
+    webSocket.disableAutomaticReconnection(); // Disable auto-reconnect
 
     // Setup a callback to be fired (in a background thread, watch out for race conditions !)
     // when a message or an event (open, close, error) is received
@@ -48,6 +49,10 @@ int main()
                 std::cout << "Connection established" << std::endl;
                 std::cout << "> " << std::flush;
             }
+	    else if (msg->type == ix::WebSocketMessageType::Close)
+	    {
+	    	std::cout << "Connection closed" << std::endl;
+	    }
             else if (msg->type == ix::WebSocketMessageType::Error)
             {
                 // Maybe SSL is not configured properly
