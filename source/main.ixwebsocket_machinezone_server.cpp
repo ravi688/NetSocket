@@ -55,13 +55,14 @@ int main()
             {
                 std::cout << "\t" << it.first << ": " << it.second << std::endl;
             }
-	    std::lock_guard<std::mutex> lock(gWebSocketPtrMutex);
-	    webSocketPtr = &webSocket;
+	       std::lock_guard<std::mutex> lock(gWebSocketPtrMutex);
+	       webSocketPtr = &webSocket;
         }
         else if(msg->type == ix::WebSocketMessageType::Close)
         {
-    	    std::cout << "close message is received\n";
-	    webSocketPtr = nullptr;
+    	   std::cout << "close message is received\n";
+           std::lock_guard<std::mutex> lock(gWebSocketPtrMutex);
+	       webSocketPtr = nullptr;
         }
         else if (msg->type == ix::WebSocketMessageType::Message)
         {
