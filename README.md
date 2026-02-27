@@ -1,5 +1,6 @@
 # NetSocket
-Cross platform Networking Programming library which works on Linux and Windows both. 
+Cross platform Networking Programming library which works on Linux and Windows both. <br>
+It supports TCP sockets and Web Sockets (via IXWebSocket library)
 
 ## Installing dependencies
 ### Packages for MINGW64
@@ -35,7 +36,11 @@ build_master meson compile -C build
 python client_server_test.py build
 ```
 ## Examples
+### TCP Sockets (client and server)
 1. https://github.com/ravi688/NetSocket/blob/main/source/main.client.cpp
 2. https://github.com/ravi688/NetSocket/blob/main/source/main.server.cpp
 3. https://github.com/ravi688/NetSocket/blob/main/source/main.client_async_socket.cpp
 4. https://github.com/ravi688/NetSocket/blob/main/source/main.server_async_socket.cpp
+### Web Sockets (client and server)
+1. https://github.com/ravi688/NetSocket/blob/main/source/main.ixwebsocket.client.cpp
+2. https://github.com/ravi688/NetSocket/blob/main/source/main.ixwebsocket.server.cpp
