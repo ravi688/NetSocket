@@ -599,6 +599,82 @@ netsocket_static
 	gnu_symbol_visibility: 'hidden'
 )
 
+# -------------- Target: test_client_ixwebsocket_multithreads ------------------
+test_client_ixwebsocket_multithreads_sources_bm_internal__ = [
+'source/main.ixwebsocket.multi-threads.client.cpp'
+]
+test_client_ixwebsocket_multithreads_include_dirs_bm_internal__ = [
+
+]
+test_client_ixwebsocket_multithreads_dependencies_bm_internal__ = [
+
+]
+test_client_ixwebsocket_multithreads_link_args_bm_internal__ = {
+'windows' : [],
+'linux' : [],
+'darwin' : []
+}
+test_client_ixwebsocket_multithreads_platform_src_bm_internal__ = {
+'windows' : [],
+'linux' : [],
+'darwin' : []
+}
+test_client_ixwebsocket_multithreads_defines_bm_internal__ = [
+
+]
+test_client_ixwebsocket_multithreads = executable('test_client_ixwebsocket_multithreads',
+	test_client_ixwebsocket_multithreads_sources_bm_internal__ + test_client_ixwebsocket_multithreads_platform_src_bm_internal__[host_machine.system()] + sources_bm_internal__,
+	dependencies: dependencies_bm_internal__ + test_client_ixwebsocket_multithreads_dependencies_bm_internal__,
+	include_directories: [inc_bm_internal__, test_client_ixwebsocket_multithreads_include_dirs_bm_internal__],
+	install: false,
+	c_args: test_client_ixwebsocket_multithreads_defines_bm_internal__ + project_build_mode_defines_bm_internal__,
+	cpp_args: test_client_ixwebsocket_multithreads_defines_bm_internal__ + project_build_mode_defines_bm_internal__, 
+	link_args: test_client_ixwebsocket_multithreads_link_args_bm_internal__[host_machine.system()], 
+	link_with: [
+netsocket_static
+]
+,
+	gnu_symbol_visibility: 'hidden'
+)
+
+# -------------- Target: test_server_ixwebsocket_multithreads ------------------
+test_server_ixwebsocket_multithreads_sources_bm_internal__ = [
+'source/main.ixwebsocket.multi-threads.server.cpp'
+]
+test_server_ixwebsocket_multithreads_include_dirs_bm_internal__ = [
+
+]
+test_server_ixwebsocket_multithreads_dependencies_bm_internal__ = [
+
+]
+test_server_ixwebsocket_multithreads_link_args_bm_internal__ = {
+'windows' : [],
+'linux' : [],
+'darwin' : []
+}
+test_server_ixwebsocket_multithreads_platform_src_bm_internal__ = {
+'windows' : [],
+'linux' : [],
+'darwin' : []
+}
+test_server_ixwebsocket_multithreads_defines_bm_internal__ = [
+
+]
+test_server_ixwebsocket_multithreads = executable('test_server_ixwebsocket_multithreads',
+	test_server_ixwebsocket_multithreads_sources_bm_internal__ + test_server_ixwebsocket_multithreads_platform_src_bm_internal__[host_machine.system()] + sources_bm_internal__,
+	dependencies: dependencies_bm_internal__ + test_server_ixwebsocket_multithreads_dependencies_bm_internal__,
+	include_directories: [inc_bm_internal__, test_server_ixwebsocket_multithreads_include_dirs_bm_internal__],
+	install: false,
+	c_args: test_server_ixwebsocket_multithreads_defines_bm_internal__ + project_build_mode_defines_bm_internal__,
+	cpp_args: test_server_ixwebsocket_multithreads_defines_bm_internal__ + project_build_mode_defines_bm_internal__, 
+	link_args: test_server_ixwebsocket_multithreads_link_args_bm_internal__[host_machine.system()], 
+	link_with: [
+netsocket_static
+]
+,
+	gnu_symbol_visibility: 'hidden'
+)
+
 
 #-------------------------------------------------------------------------------
 #--------------------------------Header Intallation----------------------------------
