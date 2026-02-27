@@ -72,7 +72,10 @@ int main()
     }
 
     for(auto& thread : threads)
-        thread.join();
+    {
+        if(thread.joinable())
+            thread.join();
+    }
 
     spdlog::info("Stopping the server in 5 seconds");
     std::this_thread::sleep_for(std::chrono::duration<float, std::ratio<1, 1>>(5));

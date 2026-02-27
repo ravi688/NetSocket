@@ -72,7 +72,10 @@ int main()
     }
 
     for(auto& thread : threads)
-        thread.join();
+    {
+        if(thread.joinable())
+            thread.join();
+    }
 
     return 0;
 }
