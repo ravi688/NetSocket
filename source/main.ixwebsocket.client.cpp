@@ -55,11 +55,11 @@ int main()
         spdlog::info("Received data is correct {}", i);
     }
 
-    // result = mySocket.close();
-    // netsocket_assert(result == netsocket::Result::Success);
-    // spdlog::info("Connection closed successfully");
-    //
+    spdlog::info("Closing connection in 5 seconds");
     std::this_thread::sleep_for(std::chrono::duration<float, std::ratio<1, 1>>(5));
+    result = mySocket.close();
+    netsocket_assert(result == netsocket::Result::Success);
+    spdlog::info("Connection closed successfully");
 
     return 0;
 }

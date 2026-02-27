@@ -41,6 +41,9 @@ int main()
 
     spdlog::info("Connection accepted");
 
+    std::this_thread::sleep_for(std::chrono::duration<float, std::ratio<1, 1>>(2));
+    spdlog::info("Starting to send in 2 seconds");
+
     for(int i = 0; i < 1000; ++i)
     {
         spdlog::info("Sending data...");
@@ -50,9 +53,14 @@ int main()
         netsocket_assert(result == netsocket::Result::Success);
     }
 
+    spdlog::info("Closing client socket in 9 seconds");
+    std::this_thread::sleep_for(std::chrono::duration<float, std::ratio<1, 1>>(9));
     result = clientSocket->close();
     netsocket_assert(result == netsocket::Result::Success);
     spdlog::info("Connection closed successfully");
+
+    std::this_thread::sleep_for(std::chrono::duration<float, std::ratio<1, 1>>(5));
+    spdlog::info("Stopping the server in 5 seconds");
 
     return 0;
 }
