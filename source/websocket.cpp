@@ -123,14 +123,21 @@ namespace netsocket
 	{
 		if(m_clientSocket)
 		{
-			// stop() calls close() in itself, so no need to call explicitly
-			m_clientSocket->stop();
+			m_clientSocket->close();
+			
+			// Wait for the socket to be disconnected completely
+			{
+				std::unique_lock<std::mutex> lock(m_receiveMutex);
+				m_receiveCV.wait(lock, [this] { return !this->m_isConnected; });
+			}
+
 			m_isServerOwnedClient = false;
 			m_clientSocket.reset();
 		}
 		else if(m_serverSocket)
 		{
-			m_serverSocket->stop();
+			// NOTE: call to stop() over ix::WebSocketServer is not idempotent, it will fire redundant socket closure error if stop() is followed by destructor
+			// m_serverSocket->stop();
 			// Calling wait() blocks the calling thread forever, I checked the implementation of wait(), it just waits for nothing.
 			// m_serverSocket->wait();
 			m_serverSocket.reset();
@@ -204,20 +211,20 @@ namespace netsocket
 			const auto& str = msg->str;
 			postMessageInReceiveBuffer(reinterpret_cast<const u8*>(str.data()), str.size());
 		}
-		else if (msg->type == ix::WebSocketMessageType::Open
-				|| msg->type == ix::WebSocketMessageType::Error
-				|| msg->type == ix::WebSocketMessageType::Close)
+		else if (msg->type == ix::WebSocketMessageType::Open)
 		{
-			std::lock_guard<std::mutex> lock(m_receiveMutex);
-			if(msg->type == ix::WebSocketMessageType::Open)
-		    	m_isConnected = true;
-			if(msg->type == ix::WebSocketMessageType::Error || msg->type == ix::WebSocketMessageType::Close)
-			{
-				if(msg->type == ix::WebSocketMessageType::Error)
-					m_isError = true;
-		    	m_isConnected = false;
-			}
+		    m_isConnected = true;
+		    m_receiveCV.notify_one();			
+		}
+		else if (msg->type == ix::WebSocketMessageType::Error)
+		{
+			m_isError = true;
 			m_receiveCV.notify_one();
+		}
+		else if (msg->type == ix::WebSocketMessageType::Close)
+		{
+		    m_isConnected = false;
+		    m_receiveCV.notify_one();
 		}
 	}
 }

@@ -27,7 +27,7 @@ namespace netsocket
 		std::unique_ptr<com::ProducerConsumerBuffer<std::unique_ptr<WebSocket>>> m_acceptedSockets;
 		
 		std::atomic<bool> m_isConnected;
-		bool m_isError;
+		std::atomic<bool> m_isError;
 
 		std::mutex m_receiveMutex;
 		std::condition_variable m_receiveCV;
