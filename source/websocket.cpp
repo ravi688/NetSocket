@@ -185,6 +185,23 @@ namespace netsocket
 		return Result::Success;
 	}
 
+	Result WebSocket::finish()
+	{
+		// TODO
+		return netsocket::Result::Success;
+	}
+
+	void WebSocket::callOnDisconnect()
+	{
+		if(m_onDisconnectCallback)
+			m_onDisconnectCallback(*this);
+	}
+
+	void WebSocket::setOnDisconnect(const OnDisconnectCallback& callback)
+	{
+		m_onDisconnectCallback = callback;
+	}
+
 	std::unique_ptr<WebSocket> WebSocket::CreateAcceptedSocket(ix::WebSocket& ixWebSocket)
 	{
 		std::unique_ptr<WebSocket> webSocket = std::make_unique<WebSocket>();
@@ -235,6 +252,7 @@ namespace netsocket
 			// So, it is important here to keep the mutex locked until notify_one is called and then let the close() proceed further.
 			std::lock_guard<std::mutex> lock(m_receiveMutex);
 		    m_isConnected = false;
+		    callOnDisconnect();
 		    m_receiveCV.notify_one();
 		}
 	}

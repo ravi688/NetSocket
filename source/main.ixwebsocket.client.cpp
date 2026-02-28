@@ -36,6 +36,11 @@ int main()
     netsocket::Result result = mySocket.connect(ipAddress, gPortNumber);
     netsocket_assert((result == netsocket::Result::Success) && "Failed to connect");
 
+    mySocket.setOnDisconnect([](netsocket::WebSocket& socket)
+    {
+        spdlog::info("OnDisconnect callback: socket has been closed");
+    });
+
     spdlog::info("Connection successful");
 
     spdlog::info("Starting to receive in 5 seconds");

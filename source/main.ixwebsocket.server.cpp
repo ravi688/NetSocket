@@ -39,6 +39,11 @@ int main()
     netsocket_assert(clientSocket && "Failed to accept connection");
     netsocket_assert(clientSocket->isConnected());
 
+    clientSocket->setOnDisconnect([](netsocket::WebSocket& socket)
+    {
+        spdlog::info("OnDisconnect callback: socket has been closed");
+    });
+
     spdlog::info("Connection accepted");
 
     std::this_thread::sleep_for(std::chrono::duration<float, std::ratio<1, 1>>(2));

@@ -12,11 +12,13 @@
 #include <vector>
 #include <condition_variable>
 #include <memory>
+#include <functional>
 
 namespace netsocket
 {
 	class NETSOCKET_API WebSocket
 	{
+		using OnDisconnectCallback = std::function<void(WebSocket&)>;
 		template<typename T>
 		using Deleter = void (*)(T*);
 		template<typename T>
@@ -33,6 +35,8 @@ namespace netsocket
 		std::condition_variable m_receiveCV;
 		bool m_hasReceiveData;
 		std::vector<u8> m_receiveBuffer;
+
+		OnDisconnectCallback m_onDisconnectCallback;
 
 		// True if this socket is a client socket and on the server machine
 		bool m_isServerOwnedClient;
@@ -52,6 +56,8 @@ namespace netsocket
 		void postMessageInReceiveBuffer(const u8* const data, const u32 size);
 		void processMessage(const ix::WebSocketMessagePtr& msg);
 
+		void callOnDisconnect();
+
 	public:
 		WebSocket();
 		~WebSocket();
@@ -65,6 +71,15 @@ namespace netsocket
 
 		Result send(const u8* bytes, u32 size);
 		Result receive(u8* bytes, u32 size);
+
+		// Flushses the internal send buffer or returns an error if the send fails or timed out
+		Result finish();
+
+		void setOnDisconnect(const OnDisconnectCallback& callback);
+		void setOnDisconnect(void (*onDisconnect)(WebSocket& socket, void* userData), void* userData)
+		{
+			setOnDisconnect([userData, onDisconnect](WebSocket& socket) { onDisconnect(socket, userData); });
+		}
 
 		template<typename T>
 		bool sendNonEnum(const T& value)
