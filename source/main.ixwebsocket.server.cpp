@@ -58,6 +58,8 @@ int main()
         netsocket_assert(result == netsocket::Result::Success);
         bool isSuccess = clientSocket->send<u32>(static_cast<u32>(i));
         netsocket_assert(isSuccess);
+        std::optional<u32> value = clientSocket->receive<u32>();
+        netsocket_assert(*value == static_cast<u32>(i));
     }
 
     spdlog::info("Closing client socket in 9 seconds");

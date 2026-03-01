@@ -61,6 +61,8 @@ int main()
         netsocket_assert(value.has_value());
         netsocket_assert(*value == static_cast<u32>(i));
         spdlog::info("Received data is correct {}", i);
+        bool isSuccess = mySocket.send<u32>(*value);
+        spdlog::info("Echoed success");
     }
 
     spdlog::info("Closing connection in 5 seconds");
