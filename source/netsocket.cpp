@@ -307,6 +307,13 @@ namespace netsocket
 			m_onDisconnectCallback(*this);
 	}
 
+	void Socket::setTCPNoDelay()
+	{
+		BOOL flag = TRUE;
+    	if(setsockopt(m_socket, IPPROTO_TCP, TCP_NODELAY, (char*)&flag, sizeof(flag)) == -1)
+    		com_debug_log_error("Failed to set TCP_NODELAY");
+	}
+
 	void Socket::setOnDisconnect(const OnDisconnectCallback& callback)
 	{
 		m_onDisconnectCallback = callback;

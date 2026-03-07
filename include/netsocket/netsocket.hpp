@@ -105,6 +105,9 @@ namespace netsocket
 		Result send(const u8* bytes, u32 size);
 		Result receive(u8* bytes, u32 size);
 
+		// Disables the Nagle's algorithm, which helps reducing the latency in transmitting small packets
+		void setTCPNoDelay();
+
 		void setOnDisconnect(const OnDisconnectCallback& callback);
 		void setOnDisconnect(void (*onDisconnect)(Socket& socket, void* userData), void* userData)
 		{
