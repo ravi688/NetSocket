@@ -310,7 +310,7 @@ namespace netsocket
 
 	void Socket::setTCPNoDelay()
 	{
-#if PLATFORM_WINDOWS
+#ifdef PLATFORM_WINDOWS
 		BOOL flag = TRUE;
 		auto result = setsockopt(m_socket, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&flag), sizeof(flag));
 #else // PLATFORM_LINUX
