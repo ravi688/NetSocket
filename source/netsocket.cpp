@@ -7,6 +7,7 @@
 #	include <ws2tcpip.h>
 #elif defined(PLATFORM_LINUX)
 #	include <sys/socket.h>
+#	include <netinet/tcp.h>
 #	include <arpa/inet.h> // for inet_addr
 #	include <netdb.h> // for struct addrinfo
 #	include <unistd.h> // for close
@@ -309,9 +310,15 @@ namespace netsocket
 
 	void Socket::setTCPNoDelay()
 	{
+#if PLATFORM_WINDOWS
 		BOOL flag = TRUE;
-    	if(setsockopt(m_socket, IPPROTO_TCP, TCP_NODELAY, (char*)&flag, sizeof(flag)) == -1)
-    		com_debug_log_error("Failed to set TCP_NODELAY");
+		auto result = setsockopt(m_socket, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&flag), sizeof(flag));
+#else // PLATFORM_LINUX
+		int flag = 1;
+		auto result = setsockopt(m_socket, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(flag));
+#endif
+    		if(result == -1)
+    			com_debug_log_error("Failed to set TCP_NODELAY");
 	}
 
 	void Socket::setOnDisconnect(const OnDisconnectCallback& callback)
