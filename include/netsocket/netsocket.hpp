@@ -53,8 +53,6 @@ namespace netsocket
 
 		OnDisconnectCallback m_onDisconnectCallback;
 
-		Socket() : m_socket(NETSOCKET_INVALID_SOCKET_HANDLE) { }
-
 		static Socket CreateAcceptedSocket(SocketHandle socket, int socketType, int ipAddressFamily, int ipProtocol)
 		{
 			Socket s;
@@ -81,6 +79,16 @@ namespace netsocket
 			s.m_isConnected = false;
 			s.m_isValid = false;
 			return s;
+		}
+
+		Socket()
+		{
+			m_socket = NETSOCKET_INVALID_SOCKET_HANDLE;
+			m_ipaFamily = 0;
+			m_socketType = 0;
+			m_ipProtocol = 0;
+			m_isConnected = false;
+			m_isValid = false;
 		}
 
 		Socket(SocketType socketType, IPAddressFamily ipAddressFamily, IPProtocol ipProtocol);
