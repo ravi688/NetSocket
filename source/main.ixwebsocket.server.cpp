@@ -6,6 +6,8 @@
 #include <netsocket/netinterface.hpp>
 #include <netsocket/assert.hpp>
 
+#include <cstring>
+
 static constexpr std::string_view gPortNumber = "8000";
 
 int main()

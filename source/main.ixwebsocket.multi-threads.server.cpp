@@ -6,6 +6,7 @@
 #include <netsocket/netinterface.hpp>
 #include <netsocket/assert.hpp>
 
+#include <cstring>
 #include <thread> // for std::thread
 #include <vector> // for std::vector
 
