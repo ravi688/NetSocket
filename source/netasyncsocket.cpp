@@ -4,6 +4,7 @@
 #include <spdlog/spdlog.h>
 
 #include <functional>
+#include <cstring>
 
 namespace netsocket
 {
@@ -13,7 +14,7 @@ namespace netsocket
 		m_buffer = buf_create(sizeof(u8), dataSize, 0);
 		buf_push_pseudo(&m_buffer, dataSize);
 		void* ptr = buf_get_ptr(&m_buffer);
-		memcpy(ptr, reinterpret_cast<void*>(const_cast<u8*>(data)), dataSize);
+		std::memcpy(ptr, reinterpret_cast<void*>(const_cast<u8*>(data)), dataSize);
 		m_isValid = true;
 	}
 
